@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcadeFin - Personal Finance Tracker</title>
+    <meta name="description"
+        content="ArcadeFin — Dashboard keuangan modern untuk mencatat pemasukan dan pengeluaran Anda secara real-time.">
+    <link rel="icon" href="aset/logo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <!-- ==================== AUTH SCREEN ==================== -->
+    <div id="auth-screen" class="auth-screen">
+        <!-- Animated background particles -->
+        <div class="auth-particles" id="auth-particles">
+            <div class="particle particle-1"></div>
+            <div class="particle particle-2"></div>
+            <div class="particle particle-3"></div>
+            <div class="particle particle-4"></div>
+            <div class="particle particle-5"></div>
+            <div class="particle particle-6"></div>
+        </div>
+
+        <!-- Glow orbs -->
+        <div class="auth-glow auth-glow-1"></div>
+        <div class="auth-glow auth-glow-2"></div>
+
+        <div class="auth-card">
+            <div class="auth-logo-wrapper welcome-anim welcome-anim-1">
+                <img src="aset/logo.png" alt="ArcadeFin Logo" class="auth-logo-img">
+                <div class="logo-ring"></div>
+            </div>
+            <h1 class="auth-title welcome-anim welcome-anim-2">ArcadeFin</h1>
+            <p class="auth-subtitle welcome-anim welcome-anim-3">Kelola keuangan Anda dengan mudah</p>
+
+            <!-- Auth Tabs -->
+            <div class="auth-tabs welcome-anim welcome-anim-4" id="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Masuk</button>
+                <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Daftar Baru</button>
+                <div class="auth-tab-indicator" id="auth-tab-indicator"></div>
+            </div>
+
+            <!-- Form Container with slide transitions -->
+            <div class="auth-form-container" id="auth-form-container">
+
+                <!-- ===== LOGIN FORM ===== -->
+                <div id="form-login" class="auth-form auth-form-active welcome-anim welcome-anim-5">
+                    <div class="form-group">
+                        <label for="login-code">Kode Unik Anda</label>
+                        <input type="text" id="login-code" placeholder="Masukkan token unik Anda" autocomplete="off">
+                    </div>
+                    <button class="btn-submit btn-submit-glow" onclick="loginUser()">
+                        <span>Masuk ke Dashboard</span>
+                        <svg class="btn-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                    <div class="auth-links">
+                        <button class="link-btn" onclick="showForgotToken()">🔑 Lupa Token?</button>
+                        <span class="auth-divider">•</span>
+                        <button class="link-btn" onclick="switchTab('register')">Daftar Baru</button>
+                    </div>
+                </div>
+
+                <!-- ===== REGISTER FORM ===== -->
+                <div id="form-register" class="auth-form">
+                    <div class="form-group">
+                        <label for="register-name">Nama Lengkap</label>
+                        <input type="text" id="register-name" placeholder="Contoh: Ahmad Fauzi">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" placeholder="Contoh: ahmad@gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-balance">Saldo Awal (Rp)</label>
+                        <input type="text" id="register-balance" placeholder="Contoh: 1.000.000"
+                            oninput="formatRibuan(this)">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-token">Buat Token Unik (Min. 1 Huruf & 1 Angka)</label>
+                        <input type="text" id="register-token" placeholder="Contoh: Budi123" maxlength="15"
+                            autocomplete="off">
+                    </div>
+                    <button class="btn-submit btn-submit-glow" onclick="registerUser()">Daftar Akun</button>
+                </div>
+
+                <!-- ===== REGISTER RESULT ===== -->
+                <div id="register-result" class="auth-form">
+                    <div class="register-result-content">
+                        <div class="result-icon">✅</div>
+                        <p class="result-text">Pendaftaran berhasil! Berikut adalah token Anda:</p>
+                        <div class="code-display" id="generated-code">------</div>
+                        <p class="result-warning">⚠️ Catat dan ingat token ini untuk login!</p>
+                        <button class="btn-submit" onclick="goToLoginAfterRegister()">Lanjut Login</button>
+                    </div>
+                </div>
+
+                <!-- ===== LUPA TOKEN — Step 1: Masukkan Nama ===== -->
+                <div id="forgot-step1" class="auth-form">
+                    <div class="forgot-header">
+                        <span class="forgot-icon">🔑</span>
+                        <h3 class="forgot-title">Lupa Token?</h3>
+                        <p class="forgot-desc">Masukkan nama lengkap yang Anda daftarkan.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="forgot-name">Nama Lengkap</label>
+                        <input type="text" id="forgot-name" placeholder="Masukkan nama lengkap Anda">
+                    </div>
+                    <button class="btn-submit" onclick="forgotTokenStep1()">Cari Akun Saya</button>
+                    <div class="auth-links">
+                        <button class="link-btn" onclick="backToLogin()">← Kembali ke Login</button>
+                    </div>
+                </div>
+
+                <!-- ===== LUPA TOKEN — Step 2: Konfirmasi Email ===== -->
+                <div id="forgot-step2" class="auth-form">
+                    <div class="forgot-header">
+                        <span class="forgot-icon">📧</span>
+                        <h3 class="forgot-title">Verifikasi Email</h3>
+                        <p class="forgot-desc">Akun ditemukan! Email terdaftar:</p>
+                        <div class="masked-email" id="masked-email">ma****@gmail.com</div>
+                        <p class="forgot-desc">Masukkan email lengkap Anda untuk konfirmasi.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="forgot-email">Email Lengkap</label>
+                        <input type="email" id="forgot-email" placeholder="Masukkan email lengkap Anda">
+                    </div>
+                    <button class="btn-submit" onclick="forgotTokenStep2()">Verifikasi & Tampilkan Token</button>
+                    <div class="auth-links">
+                        <button class="link-btn" onclick="showForgotToken()">← Kembali</button>
+                    </div>
+                </div>
+
+                <!-- ===== LUPA TOKEN — Step 3: Tampilkan Token ===== -->
+                <div id="forgot-step3" class="auth-form">
+                    <div class="forgot-header">
+                        <span class="forgot-icon">🎉</span>
+                        <h3 class="forgot-title">Token Ditemukan!</h3>
+                        <p class="forgot-desc">Berikut adalah kode unik Anda:</p>
+                        <div class="code-display" id="recovered-code">------</div>
+                        <p class="result-warning">📝 Catat kembali kode ini agar tidak lupa lagi.</p>
+                    </div>
+                    <button class="btn-submit" onclick="backToLoginWithCode()">Login dengan Kode Ini</button>
+                </div>
+
+            </div><!-- /auth-form-container -->
+
+        </div>
+    </div>
+
+    <!-- ==================== DASHBOARD SCREEN ==================== -->
+    <div id="dashboard-screen" class="dashboard-wrapper hidden">
+
+        <!-- Header -->
+        <header class="dashboard-header animate-in">
+            <div class="header-top">
+                <div class="header-brand">
+                    <img src="aset/logo.png" alt="ArcadeFin Logo" class="header-logo-img">
+                    <span class="header-brand-name">ArcadeFin</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-action" onclick="showEditTokenModal()">✏️ Edit Token</button>
+                    <button class="btn-logout" onclick="logoutUser()">Logout</button>
+                </div>
+            </div>
+            <p class="subtitle">Selamat datang, <strong id="user-display-name">-</strong></p>
+        </header>
+
+        <!-- Balance Cards -->
+        <div class="balance-row animate-in">
+            <div class="balance-card">
+                <div class="balance-card-header">
+                    <div class="balance-label">Saldo Saat Ini</div>
+                    <button class="btn-eye" id="btn-eye-balance" onclick="toggleBalanceVisibility()"
+                        title="Sembunyikan / Tampilkan Saldo">
+                        <svg class="eye-icon eye-open" id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" width="18"
+                            height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-icon eye-closed hidden" id="eye-closed-icon" xmlns="http://www.w3.org/2000/svg"
+                            width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                            </path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="balance-amount" id="current-balance" data-value="Rp 0">Rp 0</div>
+            </div>
+            <div class="balance-card balance-sm">
+                <div class="balance-card-header">
+                    <div class="balance-label">Total Pemasukan</div>
+                </div>
+                <div class="balance-amount income-color" id="total-income" data-value="Rp 0">Rp 0</div>
+            </div>
+            <div class="balance-card balance-sm">
+                <div class="balance-card-header">
+                    <div class="balance-label">Total Pengeluaran</div>
+                </div>
+                <div class="balance-amount expense-color" id="total-expense" data-value="Rp 0">Rp 0</div>
+            </div>
+        </div>
+
+        <!-- Negative Balance Mascot -->
+        <div id="negative-mascot" class="negative-mascot hidden">
+            <div class="mascot-character">
+                <div class="mascot-emoji">😭</div>
+                <div class="mascot-speech-bubble">
+                    <span>Dompet menangis... Saldo negatif!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="dashboard-grid">
+
+            <!-- Left: Form Card -->
+            <section class="glass-card animate-in" aria-label="Form transaksi">
+                <h2 class="card-title" id="form-title"><span class="icon">📝</span> Catat Transaksi</h2>
+
+                <div class="form-group">
+                    <label for="amount">Jumlah (Rp)</label>
+                    <input type="text" id="amount" placeholder="Contoh: 50.000" oninput="formatRibuan(this)">
+                </div>
+
+                <div class="form-group">
+                    <label for="type">Tipe Transaksi</label>
+                    <div class="select-wrapper">
+                        <select id="type">
+                            <option value="expense">Pengeluaran</option>
+                            <option value="income">Pemasukan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Kategori</label>
+                    <!-- Batas karakter 15 -->
+                    <input type="text" id="category" placeholder="Contoh: Makanan" maxlength="15">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Deskripsi</label>
+                    <input type="text" id="description" placeholder="Contoh: Makan siang di kantin">
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-submit" id="btn-save-trx" onclick="tambahTransaksi()">
+                        Simpan Transaksi
+                    </button>
+                    <!-- Tombol update (disembunyikan saat default) -->
+                    <button class="btn-submit btn-update hidden" id="btn-update-trx" onclick="updateTransaksi()">
+                        Update Transaksi
+                    </button>
+                    <!-- Tombol batal -->
+                    <button class="btn-cancel hidden" id="btn-cancel-edit" onclick="cancelEdit()">
+                        Batal
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right: Table Card -->
+            <section class="glass-card animate-in-delay" aria-label="Riwayat transaksi">
+                <h2 class="card-title"><span class="icon">📊</span> Riwayat Transaksi</h2>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Tipe</th>
+                                <th>Kategori</th>
+                                <th style="max-width: 150px;">Deskripsi</th>
+                                <th>Jumlah</th>
+                                <th style="text-align: right;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-list">
+                            <!-- Data akan dirender di sini oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- ==================== TOAST NOTIFICATION ==================== -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ==================== MODAL KONFIRMASI HAPUS ==================== -->
+    <div id="delete-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-delete-icon">🗑️</div>
+            <h3 class="modal-title">Hapus Transaksi?</h3>
+            <p class="modal-text" id="delete-modal-text">Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini
+                tidak dapat dibatalkan.</p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Batal</button>
+                <button class="btn-submit btn-delete-confirm" id="btn-confirm-delete"
+                    onclick="confirmDeleteTransaksi()">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL DESKRIPSI ==================== -->
+    <div id="desc-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3 class="modal-title">Detail Deskripsi</h3>
+            <p class="modal-text" id="modal-desc-text"></p>
+            <button class="btn-submit" onclick="closeDescModal()">Tutup</button>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL EDIT TOKEN ==================== -->
+    <div id="edit-token-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3 class="modal-title">Edit Token Unik</h3>
+            <p class="modal-text">Masukkan token baru Anda (Minimal 1 huruf & 1 angka).</p>
+            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                <input type="text" id="new-token-input" placeholder="Contoh: Arcade2024" maxlength="15">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeEditTokenModal()">Batal</button>
+                <button class="btn-submit" onclick="saveNewToken()">Simpan Token</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
