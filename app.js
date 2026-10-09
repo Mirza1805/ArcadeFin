@@ -42,6 +42,27 @@ function maskEmail(email) {
   return first2 + '****' + last2 + '@' + domain;
 }
 
+// --- Crypto Helpers ---
+function encrypt(text, secretKey) {
+  if (!text && text !== 0) return text; // Handle empty/null but allow 0
+  return CryptoJS.AES.encrypt(text.toString(), secretKey).toString();
+}
+
+function decrypt(cipherText, secretKey) {
+  if (!cipherText) return cipherText;
+  try {
+    const bytes = CryptoJS.AES.decrypt(cipherText.toString(), secretKey);
+    const originalText = bytes.toString(CryptoJS.enc.Utf8);
+    if (!originalText) {
+      return cipherText; // Backward compatibility for unencrypted data
+    }
+    return originalText;
+  } catch (error) {
+    // If decryption fails (e.g., malformed or unencrypted data), return original
+    return cipherText;
+  }
+}
+
 // ===================================================
 // 3. UI HELPERS — Toast & Auth Form Transitions
 // ===================================================
@@ -426,7 +447,18 @@ async function fetchTransactions() {
     return;
   }
 
-  allTransactions = data || [];
+  // --- DECRYPT DATA ---
+  const decryptedData = (data || []).map(trx => {
+    return {
+      ...trx,
+      amount: Number(decrypt(trx.amount, userCode)) || 0,
+      type: decrypt(trx.type, userCode),
+      category: decrypt(trx.category, userCode),
+      description: decrypt(trx.description, userCode)
+    };
+  });
+
+  allTransactions = decryptedData;
 
   // *** Auto-detect kolom ID dari data pertama ***
   if (allTransactions.length > 0) {
@@ -652,8 +684,14 @@ async function tambahTransaksi() {
   if (!amount || amount <= 0) { showToast('Perhatian', 'Jumlah harus diisi dan lebih dari 0!', 'warning'); return; }
   if (!category) { showToast('Perhatian', 'Kategori harus diisi!', 'warning'); return; }
 
+  // --- ENCRYPT PAYLOAD ---
+  const encryptedAmount = encrypt(amount.toString(), userCode);
+  const encryptedType = encrypt(type, userCode);
+  const encryptedCategory = encrypt(category, userCode);
+  const encryptedDescription = encrypt(description, userCode);
+
   const { error } = await supabaseClient.from('transactions').insert([{
-    amount: amount, type: type, category: category, description: description,
+    amount: encryptedAmount, type: encryptedType, category: encryptedCategory, description: encryptedDescription,
     date: new Date().toISOString().split('T')[0], user_code: userCode
   }]);
 
@@ -747,11 +785,17 @@ async function updateTransaksi() {
     return;
   }
 
+  // --- ENCRYPT PAYLOAD ---
+  const encryptedAmount = encrypt(amount.toString(), userCode);
+  const encryptedType = encrypt(type, userCode);
+  const encryptedCategory = encrypt(category, userCode);
+  const encryptedDescription = encrypt(description, userCode);
+
   const updatePayload = {
-    amount: amount,
-    type: type,
-    category: category,
-    description: description
+    amount: encryptedAmount,
+    type: encryptedType,
+    category: encryptedCategory,
+    description: encryptedDescription
   };
 
   console.log('[ArcadeFin] UPDATE — kolom:', ID_COLUMN, '| nilai:', editTrxId, '(tipe:', typeof editTrxId, ') | user_code:', userCode);
