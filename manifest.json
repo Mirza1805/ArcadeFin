@@ -1,0 +1,21 @@
+{
+  "name": "ArcadeFin",
+  "short_name": "ArcadeFin",
+  "description": "ArcadeFin — Dashboard keuangan modern",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "icons": [
+    {
+      "src": "aset/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "aset/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

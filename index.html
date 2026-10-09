@@ -12,6 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f1117">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
@@ -90,9 +92,15 @@
                             oninput="formatRibuan(this)">
                     </div>
                     <div class="form-group">
+                        <label for="register-wallet-name">Nama Dompet Pertama</label>
+                        <input type="text" id="register-wallet-name" placeholder="Contoh: BCA / Tunai" maxlength="20">
+                    </div>
+                    <div class="form-group">
                         <label for="register-token">Buat Token Unik (Min. 1 Huruf & 1 Angka)</label>
-                        <input type="text" id="register-token" placeholder="Contoh: Budi123" maxlength="15"
-                            autocomplete="off">
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="text" id="register-token" placeholder="Contoh: Budi123" maxlength="15" autocomplete="off" style="flex: 1; padding-right: 40px;">
+                            <button type="button" onclick="generateRandomToken('register-token')" style="position: absolute; right: 8px; background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.7; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Auto-Generate Token">🎲</button>
+                        </div>
                     </div>
                     <button class="btn-submit btn-submit-glow" onclick="registerUser()">Daftar Akun</button>
                 </div>
@@ -184,7 +192,7 @@
         <div class="balance-row animate-in">
             <div class="balance-card">
                 <div class="balance-card-header">
-                    <div class="balance-label">Saldo Saat Ini</div>
+                    <div class="balance-label">Total Kekayaan</div>
                     <button class="btn-eye" id="btn-eye-balance" onclick="toggleBalanceVisibility()"
                         title="Sembunyikan / Tampilkan Saldo">
                         <svg class="eye-icon eye-open" id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" width="18"
@@ -204,6 +212,7 @@
                     </button>
                 </div>
                 <div class="balance-amount" id="current-balance" data-value="Rp 0">Rp 0</div>
+
             </div>
             <div class="balance-card balance-sm">
                 <div class="balance-card-header">
@@ -229,6 +238,11 @@
             </div>
         </div>
 
+        <!-- WALLETS ROW -->
+        <div class="wallets-container animate-in" id="wallets-container">
+            <!-- Diisi JS -->
+        </div>
+
         <!-- ==================== SPA NAVIGATION TABS ==================== -->
         <nav class="spa-nav animate-in" id="spa-nav">
             <button class="spa-nav-tab active" data-page="page-dashboard" onclick="switchPage('page-dashboard')">
@@ -250,15 +264,35 @@
 
                     <div class="form-group">
                         <label for="amount">Jumlah (Rp)</label>
-                        <input type="text" id="amount" placeholder="Contoh: 50.000" oninput="formatRibuan(this)">
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="text" id="amount" placeholder="Contoh: 50.000" oninput="formatRibuan(this)" style="flex: 1; padding-right: 60px;">
+                            <button type="button" class="btn-max" onclick="fillMaxAmount()" style="position: absolute; right: 8px; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">MAX</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wallet-id">Dompet Asal</label>
+                        <div class="select-wrapper">
+                            <select id="wallet-id">
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label for="type">Tipe Transaksi</label>
                         <div class="select-wrapper">
-                            <select id="type">
+                            <select id="type" onchange="toggleTransferDest()">
                                 <option value="expense">Pengeluaran</option>
                                 <option value="income">Pemasukan</option>
+                                <option value="transfer">Transfer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group hidden" id="dest-wallet-group">
+                        <label for="to-wallet-id">Dompet Tujuan (Transfer)</label>
+                        <div class="select-wrapper">
+                            <select id="to-wallet-id">
                             </select>
                         </div>
                     </div>
@@ -340,7 +374,10 @@
             <div class="glass-card animate-in">
                 <div class="rekap-header">
                     <h2 class="card-title"><span class="icon">📋</span> Rekapitulasi & Budget Bulanan</h2>
-                    <button class="btn-submit btn-add-budget" onclick="showBudgetModal()">+ Atur Budget</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-submit btn-add-budget" onclick="showBudgetModal()">+ Atur Budget</button>
+                        <button class="btn-submit" style="padding: 12px 20px; font-weight: bold; border-radius: var(--radius); border: none; cursor: pointer; color: white; background: var(--primary);" onclick="showResetDataModal()">🔄 Reset Siklus</button>
+                    </div>
                 </div>
 
                 <!-- Rekap Time Filter -->
@@ -418,7 +455,10 @@
             <h3 class="modal-title">Edit Token Unik</h3>
             <p class="modal-text">Masukkan token baru Anda (Minimal 1 huruf & 1 angka).</p>
             <div class="form-group" style="text-align: left; margin-bottom: 20px;">
-                <input type="text" id="new-token-input" placeholder="Contoh: Arcade2024" maxlength="15">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="text" id="new-token-input" placeholder="Contoh: Arcade2024" maxlength="15" style="flex: 1; padding-right: 40px;">
+                    <button type="button" onclick="generateRandomToken('new-token-input')" style="position: absolute; right: 8px; background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.7; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Auto-Generate Token">🎲</button>
+                </div>
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeEditTokenModal()">Batal</button>
@@ -460,7 +500,65 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- ==================== MODAL TAMBAH DOMPET ==================== -->
+    <div id="wallet-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3 class="modal-title">💳 Tambah Dompet Baru</h3>
+            <p class="modal-text">Buat dompet baru untuk memisahkan dana Anda.</p>
+            <div class="form-group" style="text-align: left;">
+                <label for="wallet-name">Nama Dompet</label>
+                <input type="text" id="wallet-name" placeholder="Contoh: BCA / Gopay" maxlength="20">
+            </div>
+            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                <label for="wallet-balance">Saldo Awal (Rp)</label>
+                <input type="text" id="wallet-balance" placeholder="Contoh: 500.000" oninput="formatRibuan(this)">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeWalletModal()">Batal</button>
+                <button class="btn-submit" onclick="saveWallet()">Simpan Dompet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL HAPUS DOMPET ==================== -->
+    <div id="delete-wallet-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3 class="modal-title" style="color: var(--expense-text)">⚠️ Hapus Dompet?</h3>
+            <p class="modal-text" style="color: var(--text-secondary); text-align: left;">
+                <strong>PERINGATAN:</strong> Menghapus dompet ini akan ikut menghapus <strong style="color:var(--expense-text)">SEMUA riwayat transaksi (pemasukan, pengeluaran, transfer)</strong> yang terkait dengan dompet ini secara permanen!
+            </p>
+            <p class="modal-text" style="text-align: left; margin-top: 10px;">Apakah Anda yakin ingin melanjutkan?</p>
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="btn-cancel" onclick="closeDeleteWalletModal()">Batal</button>
+                <button class="btn-submit btn-delete-confirm" onclick="confirmDeleteWallet()">Ya, Hapus Permanen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL RESET SIKLUS BUDGET ==================== -->
+    <div id="reset-data-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3 class="modal-title" style="color: var(--primary)">🔄 Reset Siklus Budget</h3>
+            <p class="modal-text" style="color: var(--text-secondary); text-align: left;">
+                Fitur ini akan memulai siklus kalkulasi budget dari awal (kembali ke Rp 0 atau 0%). Sangat cocok digunakan saat hari gajian tiba!
+            </p>
+            <ul style="text-align: left; margin: 10px 0 10px 20px; color: var(--text-secondary); font-size: 0.9rem;">
+                <li>Progress pemakaian budget akan direset.</li>
+                <li><strong>Riwayat transaksi dan saldo dompet ANDA TETAP AMAN (TIDAK dihapus).</strong></li>
+                <li>Limit kategori budget Anda tetap sama.</li>
+            </ul>
+            <p class="modal-text" style="text-align: left; margin-top: 10px;">Ketik <strong>RESET</strong> untuk memulai siklus baru:</p>
+            <div class="form-group" style="margin-top: 10px;">
+                <input type="text" id="reset-confirm-input" placeholder="Ketik RESET" autocomplete="off" style="text-align: center; font-weight: bold; text-transform: uppercase;">
+            </div>
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="btn-cancel" onclick="closeResetDataModal()">Batal</button>
+                <button class="btn-submit" onclick="confirmResetData()">Mulai Siklus Baru</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=2"></script>
 </body>
 
 </html>

@@ -1896,3 +1896,75 @@ body {
 @media (max-width: 600px) {
   .dashboard-wrapper { padding: 12px 8px; }
 }
+
+/* ===================================================
+   WALLETS UI
+   =================================================== */
+.wallets-container {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding-bottom: 8px; /* space for scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.wallets-container::-webkit-scrollbar {
+  height: 6px;
+}
+.wallets-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.wallets-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.wallet-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 180px;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.wallet-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.wallet-item.wallet-add {
+  background: transparent;
+  border: 2px dashed var(--border-color);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.wallet-item.wallet-add:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.wallet-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.wallet-bal {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
