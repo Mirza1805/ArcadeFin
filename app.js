@@ -1236,10 +1236,37 @@ function applyRekapFilter() {
 }
 
 // ===================================================
-// 15. INISIALISASI
+// 15. TEMA TERANG / GELAP
+// ===================================================
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const btnToggle = document.getElementById('btn-theme-toggle');
+  
+  if (currentTheme === 'light') {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('theme', 'dark');
+    if(btnToggle) btnToggle.textContent = '☀️ Terang';
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+    if(btnToggle) btnToggle.textContent = '🌙 Gelap';
+  }
+}
+
+// ===================================================
+// 16. INISIALISASI
 // ===================================================
 
 window.onload = () => {
+  // Theme init
+  const savedTheme = localStorage.getItem('theme');
+  const btnToggle = document.getElementById('btn-theme-toggle');
+  if (savedTheme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    if(btnToggle) btnToggle.textContent = '🌙 Gelap';
+  }
+
   const allForms = document.querySelectorAll('#auth-form-container .auth-form');
   allForms.forEach(form => {
     form.style.display = 'none';
