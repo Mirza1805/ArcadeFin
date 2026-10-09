@@ -227,78 +227,160 @@
             </div>
         </div>
 
-        <!-- Main Grid -->
-        <div class="dashboard-grid">
+        <!-- ==================== SPA NAVIGATION TABS ==================== -->
+        <nav class="spa-nav animate-in" id="spa-nav">
+            <button class="spa-nav-tab active" data-page="page-dashboard" onclick="switchPage('page-dashboard')">
+                <span class="spa-nav-icon">📊</span> Dashboard Transaksi
+            </button>
+            <button class="spa-nav-tab" data-page="page-rekap" onclick="switchPage('page-rekap')">
+                <span class="spa-nav-icon">📋</span> Rekap & Budget
+            </button>
+            <div class="spa-nav-indicator" id="spa-nav-indicator"></div>
+        </nav>
 
-            <!-- Left: Form Card -->
-            <section class="glass-card animate-in" aria-label="Form transaksi">
-                <h2 class="card-title" id="form-title"><span class="icon">📝</span> Catat Transaksi</h2>
+        <!-- ==================== PAGE 1: DASHBOARD TRANSAKSI ==================== -->
+        <section id="page-dashboard" class="spa-page spa-page-active">
+            <div class="dashboard-grid">
 
-                <div class="form-group">
-                    <label for="amount">Jumlah (Rp)</label>
-                    <input type="text" id="amount" placeholder="Contoh: 50.000" oninput="formatRibuan(this)">
+                <!-- Left: Form Card -->
+                <section class="glass-card animate-in" aria-label="Form transaksi">
+                    <h2 class="card-title" id="form-title"><span class="icon">📝</span> Catat Transaksi</h2>
+
+                    <div class="form-group">
+                        <label for="amount">Jumlah (Rp)</label>
+                        <input type="text" id="amount" placeholder="Contoh: 50.000" oninput="formatRibuan(this)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="type">Tipe Transaksi</label>
+                        <div class="select-wrapper">
+                            <select id="type">
+                                <option value="expense">Pengeluaran</option>
+                                <option value="income">Pemasukan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Kategori</label>
+                        <!-- Batas karakter 15 -->
+                        <input type="text" id="category" placeholder="Contoh: Makanan" maxlength="15">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Deskripsi</label>
+                        <input type="text" id="description" placeholder="Contoh: Makan siang di kantin">
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn-submit" id="btn-save-trx" onclick="tambahTransaksi()">
+                            Simpan Transaksi
+                        </button>
+                        <!-- Tombol update (disembunyikan saat default) -->
+                        <button class="btn-submit btn-update hidden" id="btn-update-trx" onclick="updateTransaksi()">
+                            Update Transaksi
+                        </button>
+                        <!-- Tombol batal -->
+                        <button class="btn-cancel hidden" id="btn-cancel-edit" onclick="cancelEdit()">
+                            Batal
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Right: Table Card -->
+                <section class="glass-card animate-in-delay" aria-label="Riwayat transaksi">
+                    <h2 class="card-title"><span class="icon">📊</span> Riwayat Transaksi</h2>
+
+                    <!-- Time Filter -->
+                    <div class="filter-bar" id="filter-bar">
+                        <label for="time-filter" class="filter-label">Filter Waktu:</label>
+                        <div class="select-wrapper filter-select-wrapper">
+                            <select id="time-filter" onchange="applyTimeFilter()">
+                                <option value="all">Semua</option>
+                                <option value="today">Hari Ini</option>
+                                <option value="month">Bulan Ini</option>
+                                <option value="year">Tahun Ini</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Tipe</th>
+                                    <th>Kategori</th>
+                                    <th style="max-width: 150px;">Deskripsi</th>
+                                    <th>Jumlah</th>
+                                    <th style="text-align: right;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-list">
+                                <!-- Data akan dirender di sini oleh JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div class="pagination-controls" id="pagination-controls">
+                        <button class="btn-page" id="btn-prev" onclick="goToPrevPage()" disabled>< Prev</button>
+                        <span class="page-info" id="page-info">Halaman 1 / 1</span>
+                        <button class="btn-page" id="btn-next" onclick="goToNextPage()" disabled>Next ></button>
+                    </div>
+                </section>
+
+            </div>
+        </section>
+
+        <!-- ==================== PAGE 2: REKAP & BUDGET ==================== -->
+        <section id="page-rekap" class="spa-page">
+            <div class="glass-card animate-in">
+                <div class="rekap-header">
+                    <h2 class="card-title"><span class="icon">📋</span> Rekapitulasi & Budget Bulanan</h2>
+                    <button class="btn-submit btn-add-budget" onclick="showBudgetModal()">+ Atur Budget</button>
                 </div>
 
-                <div class="form-group">
-                    <label for="type">Tipe Transaksi</label>
-                    <div class="select-wrapper">
-                        <select id="type">
-                            <option value="expense">Pengeluaran</option>
-                            <option value="income">Pemasukan</option>
+                <!-- Rekap Time Filter -->
+                <div class="filter-bar" id="rekap-filter-bar">
+                    <label for="rekap-time-filter" class="filter-label">Filter Waktu Rekap:</label>
+                    <div class="select-wrapper filter-select-wrapper">
+                        <select id="rekap-time-filter" onchange="applyRekapFilter()">
+                            <option value="month" selected>Bulan Ini</option>
+                            <option value="today">Hari Ini</option>
+                            <option value="year">Tahun Ini</option>
+                            <option value="all">Semua</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="category">Kategori</label>
-                    <!-- Batas karakter 15 -->
-                    <input type="text" id="category" placeholder="Contoh: Makanan" maxlength="15">
+                <!-- Rekap Summary Cards -->
+                <div class="rekap-summary" id="rekap-summary">
+                    <div class="rekap-summary-card">
+                        <div class="rekap-summary-label">Total Pengeluaran (Filter)</div>
+                        <div class="rekap-summary-value expense-color" id="rekap-total-expense">Rp 0</div>
+                    </div>
+                    <div class="rekap-summary-card">
+                        <div class="rekap-summary-label">Total Pemasukan (Filter)</div>
+                        <div class="rekap-summary-value income-color" id="rekap-total-income">Rp 0</div>
+                    </div>
+                    <div class="rekap-summary-card">
+                        <div class="rekap-summary-label">Total Budget Bulan Ini</div>
+                        <div class="rekap-summary-value" id="rekap-total-budget">Rp 0</div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="description">Deskripsi</label>
-                    <input type="text" id="description" placeholder="Contoh: Makan siang di kantin">
+                <!-- Budget Category Cards -->
+                <div class="budget-cards-grid" id="budget-cards-grid">
+                    <!-- Rendered by JS -->
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p>Belum ada budget yang diatur. Klik "+ Atur Budget" untuk mulai.</p>
+                    </div>
                 </div>
+            </div>
+        </section>
 
-                <div class="form-actions">
-                    <button class="btn-submit" id="btn-save-trx" onclick="tambahTransaksi()">
-                        Simpan Transaksi
-                    </button>
-                    <!-- Tombol update (disembunyikan saat default) -->
-                    <button class="btn-submit btn-update hidden" id="btn-update-trx" onclick="updateTransaksi()">
-                        Update Transaksi
-                    </button>
-                    <!-- Tombol batal -->
-                    <button class="btn-cancel hidden" id="btn-cancel-edit" onclick="cancelEdit()">
-                        Batal
-                    </button>
-                </div>
-            </section>
-
-            <!-- Right: Table Card -->
-            <section class="glass-card animate-in-delay" aria-label="Riwayat transaksi">
-                <h2 class="card-title"><span class="icon">📊</span> Riwayat Transaksi</h2>
-
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tanggal</th>
-                                <th>Tipe</th>
-                                <th>Kategori</th>
-                                <th style="max-width: 150px;">Deskripsi</th>
-                                <th>Jumlah</th>
-                                <th style="text-align: right;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transaction-list">
-                            <!-- Data akan dirender di sini oleh JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-        </div>
     </div>
 
     <!-- ==================== TOAST NOTIFICATION ==================== -->
@@ -339,6 +421,39 @@
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeEditTokenModal()">Batal</button>
                 <button class="btn-submit" onclick="saveNewToken()">Simpan Token</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL BUDGET ==================== -->
+    <div id="budget-modal" class="modal-overlay hidden">
+        <div class="modal-card modal-card-budget">
+            <h3 class="modal-title">💰 Atur Budget Kategori</h3>
+            <p class="modal-text">Tetapkan batas pengeluaran bulanan untuk kategori tertentu.</p>
+            <div class="form-group" style="text-align: left;">
+                <label for="budget-category">Kategori</label>
+                <input type="text" id="budget-category" placeholder="Contoh: Makanan" maxlength="15">
+            </div>
+            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                <label for="budget-amount">Batas Budget (Rp)</label>
+                <input type="text" id="budget-amount" placeholder="Contoh: 500.000" oninput="formatRibuan(this)">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeBudgetModal()">Batal</button>
+                <button class="btn-submit" onclick="saveBudget()">Simpan Budget</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL KONFIRMASI HAPUS BUDGET ==================== -->
+    <div id="delete-budget-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-delete-icon">🗑️</div>
+            <h3 class="modal-title">Hapus Budget?</h3>
+            <p class="modal-text" id="delete-budget-modal-text">Apakah Anda yakin ingin menghapus budget ini?</p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDeleteBudgetModal()">Batal</button>
+                <button class="btn-submit btn-delete-confirm" onclick="confirmDeleteBudget()">Hapus</button>
             </div>
         </div>
     </div>

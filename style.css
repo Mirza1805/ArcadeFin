@@ -839,6 +839,83 @@ body {
   }
 }
 
+/* ===================================================
+   SPA NAVIGATION TABS
+   =================================================== */
+.spa-nav {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 5px;
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.spa-nav-tab {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spa-nav-tab.active {
+  color: #fff;
+}
+
+.spa-nav-tab:not(.active):hover {
+  color: var(--text-primary);
+}
+
+.spa-nav-icon {
+  font-size: 1rem;
+}
+
+.spa-nav-indicator {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: calc(50% - 5px);
+  height: calc(100% - 10px);
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 0;
+}
+
+.spa-nav-indicator.tab-right {
+  transform: translateX(calc(100% + 2px));
+}
+
+/* SPA Pages */
+.spa-page {
+  display: none;
+  animation: pageFadeIn 0.3s ease-out both;
+}
+
+.spa-page.spa-page-active {
+  display: block;
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ---------- Main Grid ---------- */
 .dashboard-grid {
   display: grid;
@@ -1006,6 +1083,99 @@ body {
 .btn-cancel:hover {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
+}
+
+/* ===================================================
+   FILTER BAR
+   =================================================== */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filter-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.filter-select-wrapper {
+  flex: 0 0 auto;
+  min-width: 140px;
+}
+
+.filter-select-wrapper select {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.filter-select-wrapper select:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.filter-select-wrapper select option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* ===================================================
+   PAGINATION
+   =================================================== */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-page {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-page:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn-page:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 /* ---------- Table ---------- */
@@ -1286,6 +1456,10 @@ body {
   text-align: center;
 }
 
+.modal-card-budget {
+  max-width: 440px;
+}
+
 .modal-overlay.hidden .modal-card {
   transform: translateY(20px) scale(0.95);
 }
@@ -1325,6 +1499,176 @@ body {
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 }
 
+/* ===================================================
+   REKAP & BUDGET PAGE
+   =================================================== */
+.rekap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.rekap-header .card-title {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  flex: 1;
+  min-width: 200px;
+}
+
+.btn-add-budget {
+  flex: 0 0 auto;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+}
+
+/* Rekap Summary Cards */
+.rekap-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.rekap-summary-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: center;
+}
+
+.rekap-summary-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.rekap-summary-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Budget Cards Grid */
+.budget-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.budget-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+.budget-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.budget-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.budget-card-category {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.budget-card-category .cat-icon {
+  font-size: 1.1rem;
+}
+
+.budget-card-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.budget-card-actions .btn-action {
+  padding: 4px 8px;
+  font-size: 0.7rem;
+}
+
+.budget-card-amounts {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.budget-spent {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.budget-limit {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Progress Bar (Health Bar) */
+.progress-bar-container {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+  min-width: 2px;
+}
+
+.progress-bar-fill.bar-green {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.progress-bar-fill.bar-red {
+  background: linear-gradient(90deg, #ef4444, #fb7185);
+}
+
+.budget-card-percent {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.budget-card-percent.percent-green {
+  color: var(--income-text);
+}
+
+.budget-card-percent.percent-red {
+  color: var(--expense-text);
+}
+
+.budget-card.overbudget {
+  border-color: var(--expense-border);
+}
+
 /* ---------- Fade-in Animation ---------- */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(12px); }
@@ -1339,21 +1683,172 @@ body {
 .table-wrapper::-webkit-scrollbar-track { background: transparent; }
 .table-wrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 600px) {
-  .dashboard-wrapper { padding: 20px 12px; }
-  .dashboard-header h1 { font-size: 1.4rem; }
-  .header-brand-name { font-size: 1.2rem; }
-  .glass-card { padding: 20px 16px; }
-  .table-wrapper thead th, .table-wrapper tbody td { padding: 10px 12px; font-size: 0.82rem; }
-  .auth-card { padding: 28px 20px; }
-  .balance-amount { font-size: 1.2rem; }
-  .balance-card:first-child .balance-amount { font-size: 1.4rem; }
-  .code-display { font-size: 1.5rem; letter-spacing: 4px; padding: 12px 16px; }
-  .form-actions { flex-direction: column; }
-  .mascot-emoji { font-size: 2.8rem; }
-  .action-cell { flex-direction: column; gap: 4px; }
-  .btn-action { padding: 5px 10px; font-size: 0.7rem; }
+/* ===================================================
+   RESPONSIVE — Mobile (max-width: 768px)
+   =================================================== */
+@media (max-width: 768px) {
+  .dashboard-wrapper {
+    padding: 16px 10px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .header-top {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-brand-name {
+    font-size: 1.2rem;
+  }
+
+  .balance-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .balance-card {
+    padding: 18px 16px;
+  }
+
+  .balance-amount {
+    font-size: 1.2rem;
+  }
+
+  .balance-card:first-child .balance-amount {
+    font-size: 1.4rem;
+  }
+
+  /* SPA Nav stacked */
+  .spa-nav {
+    margin-bottom: 16px;
+  }
+
+  .spa-nav-tab {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* Dashboard grid stacks vertically */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .glass-card {
+    padding: 20px 14px;
+  }
+
+  /* Table horizontal scroll */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-wrapper table {
+    min-width: 560px;
+  }
+
+  .table-wrapper thead th,
+  .table-wrapper tbody td {
+    padding: 10px 10px;
+    font-size: 0.8rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .auth-card {
+    padding: 28px 18px;
+  }
+
+  .code-display {
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    padding: 12px 14px;
+  }
+
+  .mascot-emoji {
+    font-size: 2.8rem;
+  }
+
+  .action-cell {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .btn-action {
+    padding: 5px 10px;
+    font-size: 0.7rem;
+  }
+
   .auth-glow-1 { width: 200px; height: 200px; }
   .auth-glow-2 { width: 150px; height: 150px; }
+
+  /* Filter bar mobile */
+  .filter-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .filter-select-wrapper {
+    min-width: 120px;
+    flex: 1;
+  }
+
+  /* Pagination mobile */
+  .pagination-controls {
+    gap: 10px;
+  }
+
+  .btn-page {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+  }
+
+  /* Rekap Summary stacks */
+  .rekap-summary {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .rekap-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-add-budget {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Budget cards single column */
+  .budget-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-card {
+    width: 95%;
+    padding: 20px;
+  }
+
+  /* Toast mobile */
+  .toast-container {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+  }
+
+  .toast {
+    min-width: auto;
+    max-width: 100%;
+  }
+}
+
+/* Additional small screen adjustments */
+@media (max-width: 600px) {
+  .dashboard-wrapper { padding: 12px 8px; }
 }

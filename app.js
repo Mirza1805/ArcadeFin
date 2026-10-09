@@ -116,7 +116,7 @@ function switchTab(tab) {
 }
 
 // ===================================================
-// 4. NAVIGASI SCREEN (Auth vs Dashboard)
+// 4. NAVIGASI SCREEN (Auth vs Dashboard) & SPA
 // ===================================================
 
 function showAuth() {
@@ -132,6 +132,44 @@ function showDashboard() {
   const userName = localStorage.getItem('user_name') || '-';
   document.getElementById('user-display-name').textContent = userName;
   fetchTransactions();
+}
+
+// --- SPA Page Switching ---
+let currentPage = 'page-dashboard';
+
+function switchPage(pageId) {
+  // Update nav tabs
+  const allTabs = document.querySelectorAll('.spa-nav-tab');
+  const indicator = document.getElementById('spa-nav-indicator');
+  allTabs.forEach(tab => tab.classList.remove('active'));
+
+  const activeTab = document.querySelector(`.spa-nav-tab[data-page="${pageId}"]`);
+  if (activeTab) activeTab.classList.add('active');
+
+  // Move indicator
+  if (pageId === 'page-rekap') {
+    indicator.classList.add('tab-right');
+  } else {
+    indicator.classList.remove('tab-right');
+  }
+
+  // Switch pages
+  const allPages = document.querySelectorAll('.spa-page');
+  allPages.forEach(page => {
+    page.classList.remove('spa-page-active');
+  });
+
+  const targetPage = document.getElementById(pageId);
+  if (targetPage) {
+    targetPage.classList.add('spa-page-active');
+  }
+
+  currentPage = pageId;
+
+  // If switching to rekap, refresh budget data
+  if (pageId === 'page-rekap') {
+    renderRekapPage();
+  }
 }
 
 // ===================================================
@@ -352,10 +390,13 @@ function toggleBalanceVisibility() {
 }
 
 // ===================================================
-// 9. FETCH, RENDER, MODAL & UPDATE SALDO
+// 9. FETCH, RENDER, PAGINATION, FILTER & UPDATE SALDO
 // ===================================================
 
 let allTransactions = [];
+let filteredTransactions = [];
+let currentPageNum = 1;
+const ITEMS_PER_PAGE = 10;
 
 // *** KUNCI PERBAIKAN: Auto-detect nama kolom ID dari data Supabase ***
 // Nama kolom ID akan terdeteksi otomatis saat fetchTransactions pertama kali.
@@ -377,7 +418,8 @@ async function fetchTransactions() {
     .from('transactions')
     .select('*')
     .eq('user_code', userCode)
-    .order('date', { ascending: false });
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false });
 
   if (error) {
     showToast('Error', 'Gagal memuat data: ' + error.message, 'error');
@@ -399,10 +441,85 @@ async function fetchTransactions() {
     console.log('[ArcadeFin] Contoh ID:', allTransactions[0][ID_COLUMN], '(tipe:', typeof allTransactions[0][ID_COLUMN], ')');
   }
 
-  renderTable(allTransactions);
+  // Apply current filter
+  applyTimeFilter();
   updateBalance(allTransactions);
 }
 
+// --- Time Filter Logic ---
+function getFilteredData(filterValue, sourceData) {
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  if (filterValue === 'today') {
+    return sourceData.filter(trx => trx.date === todayStr);
+  } else if (filterValue === 'month') {
+    return sourceData.filter(trx => {
+      const d = new Date(trx.date);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+  } else if (filterValue === 'year') {
+    return sourceData.filter(trx => {
+      const d = new Date(trx.date);
+      return d.getFullYear() === currentYear;
+    });
+  }
+  // 'all'
+  return sourceData;
+}
+
+function applyTimeFilter() {
+  const filterValue = document.getElementById('time-filter').value;
+  filteredTransactions = getFilteredData(filterValue, allTransactions);
+  currentPageNum = 1;
+  renderPaginatedTable();
+}
+
+// --- Pagination Logic ---
+function renderPaginatedTable() {
+  const totalItems = filteredTransactions.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+
+  // Clamp current page
+  if (currentPageNum > totalPages) currentPageNum = totalPages;
+  if (currentPageNum < 1) currentPageNum = 1;
+
+  const startIdx = (currentPageNum - 1) * ITEMS_PER_PAGE;
+  const endIdx = startIdx + ITEMS_PER_PAGE;
+  const pageData = filteredTransactions.slice(startIdx, endIdx);
+
+  renderTable(pageData);
+  updatePaginationUI(totalPages);
+}
+
+function updatePaginationUI(totalPages) {
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  const pageInfo = document.getElementById('page-info');
+
+  pageInfo.textContent = `Halaman ${currentPageNum} / ${totalPages}`;
+  btnPrev.disabled = currentPageNum <= 1;
+  btnNext.disabled = currentPageNum >= totalPages;
+}
+
+function goToPrevPage() {
+  if (currentPageNum > 1) {
+    currentPageNum--;
+    renderPaginatedTable();
+  }
+}
+
+function goToNextPage() {
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE));
+  if (currentPageNum < totalPages) {
+    currentPageNum++;
+    renderPaginatedTable();
+  }
+}
+
+// --- Render Table (receives only current page slice) ---
 function renderTable(data) {
   const tableBody = document.getElementById('transaction-list');
   tableBody.innerHTML = '';
@@ -829,6 +946,12 @@ async function saveNewToken() {
       return;
     }
 
+    // C2. Migrasi budgets ke token baru
+    await supabaseClient
+      .from('budgets')
+      .update({ user_code: newToken })
+      .eq('user_code', oldToken);
+
     // D. Hapus user lama
     const { error: deleteErr } = await supabaseClient
       .from('users')
@@ -856,6 +979,12 @@ async function saveNewToken() {
     if (trxErr) {
       console.error('[ArcadeFin] Update transaksi gagal:', trxErr);
     }
+
+    // Update budgets juga
+    await supabaseClient
+      .from('budgets')
+      .update({ user_code: newToken })
+      .eq('user_code', oldToken);
   }
 
   // Update localStorage
@@ -869,7 +998,245 @@ async function saveNewToken() {
 }
 
 // ===================================================
-// 14. INISIALISASI
+// 14. REKAP & BUDGETING
+// ===================================================
+
+let allBudgets = [];
+let deleteBudgetId = null;
+
+// --- Fetch Budgets from Supabase ---
+async function fetchBudgets() {
+  const userCode = localStorage.getItem('user_code');
+  if (!userCode) return [];
+
+  const { data, error } = await supabaseClient
+    .from('budgets')
+    .select('*')
+    .eq('user_code', userCode);
+
+  if (error) {
+    console.error('[ArcadeFin] Fetch budgets error:', error);
+    return [];
+  }
+
+  allBudgets = data || [];
+  return allBudgets;
+}
+
+// --- Budget Modal ---
+function showBudgetModal() {
+  document.getElementById('budget-category').value = '';
+  document.getElementById('budget-amount').value = '';
+  document.getElementById('budget-modal').classList.remove('hidden');
+}
+
+function closeBudgetModal() {
+  document.getElementById('budget-modal').classList.add('hidden');
+}
+
+async function saveBudget() {
+  const userCode = localStorage.getItem('user_code');
+  if (!userCode) {
+    showToast('Sesi Habis', 'Silakan login ulang.', 'warning');
+    return;
+  }
+
+  const category = document.getElementById('budget-category').value.trim();
+  const amountLimit = parseRibuan(document.getElementById('budget-amount').value);
+
+  if (!category) {
+    showToast('Perhatian', 'Kategori harus diisi!', 'warning');
+    return;
+  }
+  if (!amountLimit || amountLimit <= 0) {
+    showToast('Perhatian', 'Batas budget harus diisi dan lebih dari 0!', 'warning');
+    return;
+  }
+
+  // Check if budget for this category already exists (case-insensitive)
+  const existing = allBudgets.find(b => b.category.toLowerCase() === category.toLowerCase());
+
+  if (existing) {
+    // Update existing budget
+    const { error } = await supabaseClient
+      .from('budgets')
+      .update({ amount_limit: amountLimit })
+      .eq('id', existing.id)
+      .eq('user_code', userCode);
+
+    if (error) {
+      showToast('Gagal', 'Gagal memperbarui budget: ' + error.message, 'error');
+      return;
+    }
+    showToast('Berhasil', `Budget kategori "${category}" berhasil diperbarui!`, 'success');
+  } else {
+    // Insert new budget
+    const { error } = await supabaseClient.from('budgets').insert([{
+      user_code: userCode,
+      category: category,
+      amount_limit: amountLimit
+    }]);
+
+    if (error) {
+      showToast('Gagal', 'Gagal menyimpan budget: ' + error.message, 'error');
+      return;
+    }
+    showToast('Berhasil', `Budget kategori "${category}" berhasil disimpan!`, 'success');
+  }
+
+  closeBudgetModal();
+  renderRekapPage();
+}
+
+// --- Delete Budget ---
+function hapusBudget(id) {
+  const budget = allBudgets.find(b => b.id === id);
+  if (!budget) return;
+
+  deleteBudgetId = id;
+  document.getElementById('delete-budget-modal-text').textContent =
+    `Anda akan menghapus budget kategori "${budget.category}" (Rp ${toRibuan(budget.amount_limit)}). Lanjutkan?`;
+  document.getElementById('delete-budget-modal').classList.remove('hidden');
+}
+
+function closeDeleteBudgetModal() {
+  deleteBudgetId = null;
+  document.getElementById('delete-budget-modal').classList.add('hidden');
+}
+
+async function confirmDeleteBudget() {
+  if (!deleteBudgetId) {
+    closeDeleteBudgetModal();
+    return;
+  }
+
+  const userCode = localStorage.getItem('user_code');
+  const { error } = await supabaseClient
+    .from('budgets')
+    .delete()
+    .eq('id', deleteBudgetId)
+    .eq('user_code', userCode);
+
+  closeDeleteBudgetModal();
+
+  if (error) {
+    showToast('Gagal', 'Gagal menghapus budget: ' + error.message, 'error');
+  } else {
+    showToast('Berhasil', 'Budget berhasil dihapus!', 'success');
+    renderRekapPage();
+  }
+
+  deleteBudgetId = null;
+}
+
+// --- Render Rekap Page ---
+async function renderRekapPage() {
+  await fetchBudgets();
+
+  const rekapFilter = document.getElementById('rekap-time-filter').value;
+  const filteredTrx = getFilteredData(rekapFilter, allTransactions);
+
+  // Calculate summary based on filtered transactions
+  let totalExpenseFiltered = 0;
+  let totalIncomeFiltered = 0;
+  filteredTrx.forEach(trx => {
+    if (trx.type === 'expense') totalExpenseFiltered += Number(trx.amount);
+    else totalIncomeFiltered += Number(trx.amount);
+  });
+
+  document.getElementById('rekap-total-expense').textContent = 'Rp ' + toRibuan(totalExpenseFiltered);
+  document.getElementById('rekap-total-income').textContent = 'Rp ' + toRibuan(totalIncomeFiltered);
+
+  // Total budget
+  let totalBudget = 0;
+  allBudgets.forEach(b => totalBudget += Number(b.amount_limit));
+  document.getElementById('rekap-total-budget').textContent = 'Rp ' + toRibuan(totalBudget);
+
+  // --- KUNCI: Untuk progress bar, SELALU gunakan akumulasi bulan berjalan ---
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const monthlyExpenses = allTransactions.filter(trx => {
+    if (trx.type !== 'expense') return false;
+    const d = new Date(trx.date);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  });
+
+  // Aggregate monthly expenses by category (case-insensitive)
+  const expenseByCategory = {};
+  monthlyExpenses.forEach(trx => {
+    const catKey = trx.category.toLowerCase();
+    expenseByCategory[catKey] = (expenseByCategory[catKey] || 0) + Number(trx.amount);
+  });
+
+  // Also aggregate filtered expenses by category for display text
+  const filteredExpenseByCategory = {};
+  filteredTrx.forEach(trx => {
+    if (trx.type !== 'expense') return;
+    const catKey = trx.category.toLowerCase();
+    filteredExpenseByCategory[catKey] = (filteredExpenseByCategory[catKey] || 0) + Number(trx.amount);
+  });
+
+  // Render budget cards
+  const grid = document.getElementById('budget-cards-grid');
+
+  if (allBudgets.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>Belum ada budget yang diatur. Klik "+ Atur Budget" untuk mulai.</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = '';
+
+  allBudgets.forEach(budget => {
+    const catKey = budget.category.toLowerCase();
+    const monthlySpent = expenseByCategory[catKey] || 0;
+    const filteredSpent = filteredExpenseByCategory[catKey] || 0;
+    const limit = Number(budget.amount_limit);
+    const percent = limit > 0 ? Math.round((monthlySpent / limit) * 100) : 0;
+    const isOver = monthlySpent > limit;
+    const barWidth = Math.min(percent, 100);
+
+    const card = document.createElement('div');
+    card.className = `budget-card${isOver ? ' overbudget' : ''}`;
+
+    card.innerHTML = `
+      <div class="budget-card-header">
+        <div class="budget-card-category">
+          <span class="cat-icon">${isOver ? '🔴' : '🟢'}</span>
+          ${budget.category}
+        </div>
+        <div class="budget-card-actions">
+          <button class="btn-action btn-action-delete" onclick="hapusBudget(${budget.id})">🗑️</button>
+        </div>
+      </div>
+      <div class="budget-card-amounts">
+        <span class="budget-spent ${isOver ? 'expense-color' : ''}">Rp ${toRibuan(filteredSpent)} <small style="color:var(--text-muted);font-weight:400;">(filter)</small></span>
+        <span class="budget-limit">/ Rp ${toRibuan(limit)}</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill ${isOver ? 'bar-red' : 'bar-green'}" style="width: ${barWidth}%"></div>
+      </div>
+      <div class="budget-card-percent ${isOver ? 'percent-red' : 'percent-green'}">
+        ${isOver ? '⚠️ Overbudget!' : ''} ${percent}% (bulan ini: Rp ${toRibuan(monthlySpent)})
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+function applyRekapFilter() {
+  renderRekapPage();
+}
+
+// ===================================================
+// 15. INISIALISASI
 // ===================================================
 
 window.onload = () => {
