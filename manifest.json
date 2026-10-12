@@ -2,7 +2,7 @@
   "name": "ArcadeFin",
   "short_name": "ArcadeFin",
   "description": "ArcadeFin — Dashboard keuangan modern",
-  "start_url": "/index.html",
+  "start_url": "https://mirza1805.github.io/ArcadeFin/",
   "display": "standalone",
   "background_color": "#0f1117",
   "theme_color": "#0f1117",
