@@ -37,6 +37,7 @@
   
   --bg-auth-card: rgba(26, 29, 39, 0.85);
   --border-auth-card: rgba(42, 45, 58, 0.6);
+  --primary: #6366f1;
 }
 
 [data-theme="light"] {
@@ -76,6 +77,7 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -86,6 +88,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s, color 0.3s;
+  overflow-x: hidden;
 }
 
 .glass-card, .balance-card, .auth-card, input, select {
@@ -353,6 +356,7 @@ body {
   transition: color 0.3s ease;
   position: relative;
   z-index: 1;
+  min-height: 44px;
 }
 
 .auth-tab.active {
@@ -477,6 +481,9 @@ body {
   cursor: pointer;
   padding: 4px 2px;
   transition: color var(--transition);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .link-btn:hover {
@@ -527,6 +534,7 @@ body {
   margin-bottom: 16px;
   font-family: 'Inter', monospace;
   user-select: all;
+  word-break: break-all;
 }
 
 .result-warning {
@@ -597,6 +605,15 @@ body {
   justify-content: space-between;
   position: relative;
   margin-bottom: 8px;
+  gap: 8px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 /* Header Brand (Logo + Name) */
@@ -604,6 +621,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .header-logo-img {
@@ -644,6 +662,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
+  min-height: 44px;
 }
 
 .btn-logout:hover {
@@ -721,6 +740,8 @@ body {
   align-items: center;
   justify-content: center;
   transition: all var(--transition);
+  min-width: 32px;
+  min-height: 32px;
 }
 
 .btn-eye:hover {
@@ -743,6 +764,7 @@ body {
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   transition: filter 0.3s ease;
+  word-break: break-word;
 }
 
 .balance-amount.blurred {
@@ -904,6 +926,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-height: 48px;
 }
 
 .spa-nav-tab.active {
@@ -971,6 +994,7 @@ body {
   box-shadow: var(--shadow);
   padding: 28px 24px;
   transition: box-shadow var(--transition);
+  overflow-x: hidden;
 }
 
 .glass-card:hover {
@@ -1023,6 +1047,7 @@ body {
   outline: none;
   appearance: none;
   -webkit-appearance: none;
+  min-height: 44px;
 }
 
 .form-group input::placeholder {
@@ -1080,6 +1105,7 @@ body {
   letter-spacing: 0.3px;
   cursor: pointer;
   transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  min-height: 44px;
 }
 
 .btn-submit:hover {
@@ -1112,6 +1138,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
+  min-height: 44px;
 }
 .btn-cancel:hover {
   background: rgba(255, 255, 255, 0.05);
@@ -1156,6 +1183,7 @@ body {
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
+  min-height: 44px;
 }
 
 .filter-select-wrapper select:focus {
@@ -1166,6 +1194,141 @@ body {
 .filter-select-wrapper select option {
   background: var(--bg-card);
   color: var(--text-primary);
+}
+
+/* ===================================================
+   DATE STRIP — Horizontal Scrollable Date Picker
+   =================================================== */
+.date-strip-container {
+  margin-bottom: 16px;
+}
+
+.date-strip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.date-strip-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.date-strip-month {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent-hover);
+}
+
+.date-strip-clear {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all var(--transition);
+  min-height: 28px;
+}
+
+.date-strip-clear:hover {
+  color: var(--accent-hover);
+  border-color: var(--accent);
+}
+
+.date-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.date-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.date-strip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  width: 48px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.date-strip-item:hover {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.date-strip-item.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+.date-strip-item.today {
+  border-color: var(--accent-hover);
+}
+
+.date-strip-item .day-name {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.date-strip-item.active .day-name {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.date-strip-item .day-num {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.date-strip-item.active .day-num {
+  color: #fff;
+}
+
+.date-strip-item .day-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 3px;
+  opacity: 0;
+}
+
+.date-strip-item.has-data .day-dot {
+  opacity: 1;
+}
+
+.date-strip-item.active .day-dot {
+  background: rgba(255, 255, 255, 0.7);
 }
 
 /* ===================================================
@@ -1192,6 +1355,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
+  min-height: 44px;
 }
 
 .btn-page:hover:not(:disabled) {
@@ -1214,6 +1378,7 @@ body {
 /* ---------- Table ---------- */
 .table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-wrapper table {
@@ -1290,6 +1455,7 @@ body {
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .type-badge.badge-income {
@@ -1308,6 +1474,7 @@ body {
 .amount-cell {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .amount-cell.amount-income {
@@ -1353,6 +1520,10 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  min-height: 36px;
+  min-width: 36px;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-action:hover {
@@ -1468,6 +1639,7 @@ body {
   justify-content: center;
   opacity: 1;
   transition: opacity 0.3s ease;
+  padding: 16px;
 }
 
 .modal-overlay.hidden {
@@ -1481,12 +1653,14 @@ body {
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   padding: 28px;
-  width: 90%;
+  width: 100%;
   max-width: 400px;
   box-shadow: var(--shadow-lg);
   transform: translateY(0) scale(1);
   transition: transform 0.3s ease;
   text-align: center;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-card-budget {
@@ -1555,6 +1729,7 @@ body {
   flex: 0 0 auto;
   padding: 10px 20px;
   font-size: 0.85rem;
+  min-height: 44px;
 }
 
 /* Rekap Summary Cards */
@@ -1590,6 +1765,7 @@ body {
   font-weight: 800;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  word-break: break-word;
 }
 
 /* Budget Cards Grid */
@@ -1639,6 +1815,8 @@ body {
 .budget-card-actions .btn-action {
   padding: 4px 8px;
   font-size: 0.7rem;
+  min-height: 36px;
+  min-width: 36px;
 }
 
 .budget-card-amounts {
@@ -1646,6 +1824,8 @@ body {
   justify-content: space-between;
   align-items: baseline;
   margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .budget-spent {
@@ -1702,6 +1882,53 @@ body {
   border-color: var(--expense-border);
 }
 
+/* ===================================================
+   BACKUP / RESTORE BUTTONS
+   =================================================== */
+.backup-restore-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-backup {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.btn-backup:hover {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+
+.btn-backup.btn-restore {
+  border-color: var(--income-border);
+  color: var(--income-text);
+}
+
+.btn-backup.btn-restore:hover {
+  background: var(--income-bg);
+}
+
+/* Hidden file input for restore */
+#restore-file-input {
+  display: none;
+}
+
 /* ---------- Fade-in Animation ---------- */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(12px); }
@@ -1735,6 +1962,12 @@ body {
 
   .header-brand-name {
     font-size: 1.2rem;
+  }
+
+  .header-actions {
+    gap: 6px;
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .balance-row {
@@ -1864,6 +2097,10 @@ body {
     align-items: flex-start;
   }
 
+  .rekap-header > div {
+    width: 100%;
+  }
+
   .btn-add-budget {
     width: 100%;
     text-align: center;
@@ -1890,6 +2127,262 @@ body {
     min-width: auto;
     max-width: 100%;
   }
+
+  /* Backup/Restore buttons stack */
+  .backup-restore-row {
+    width: 100%;
+  }
+
+  .btn-backup {
+    flex: 1;
+    justify-content: center;
+    font-size: 0.72rem;
+    padding: 8px 10px;
+  }
+}
+
+/* ===================================================
+   RESPONSIVE — Small Phone (max-width: 480px)
+   =================================================== */
+@media (max-width: 480px) {
+  html {
+    font-size: 15px;
+  }
+
+  .dashboard-wrapper {
+    padding: 12px 10px;
+  }
+
+  .header-brand-name {
+    font-size: 1.1rem;
+  }
+
+  .header-logo-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .header-brand {
+    gap: 8px;
+  }
+
+  /* All header buttons smaller on small phones */
+  .header-actions .btn-action,
+  .header-actions .btn-logout {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    min-height: 38px;
+  }
+
+  .balance-card {
+    padding: 14px 12px;
+  }
+
+  .balance-amount {
+    font-size: 1.15rem;
+  }
+
+  .balance-card:first-child .balance-amount {
+    font-size: 1.35rem;
+  }
+
+  .balance-label {
+    font-size: 0.68rem;
+  }
+
+  /* SPA Nav compact */
+  .spa-nav {
+    padding: 4px;
+    margin-bottom: 16px;
+  }
+
+  .spa-nav-tab {
+    padding: 10px 8px;
+    font-size: 0.78rem;
+    gap: 4px;
+    min-height: 44px;
+  }
+
+  .spa-nav-icon {
+    font-size: 0.9rem;
+  }
+
+  /* Glass cards tight padding */
+  .glass-card {
+    padding: 16px 12px;
+    border-radius: 10px;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+    gap: 8px;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* Form compact */
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 10px 12px;
+    font-size: 0.88rem;
+  }
+
+  .form-group label {
+    font-size: 0.68rem;
+    margin-bottom: 5px;
+  }
+
+  /* Table even more compact */
+  .table-wrapper table {
+    min-width: 500px;
+  }
+
+  .table-wrapper thead th,
+  .table-wrapper tbody td {
+    padding: 8px 8px;
+    font-size: 0.76rem;
+  }
+
+  .type-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+  }
+
+  .desc-cell {
+    max-width: 100px;
+  }
+
+  /* Budget cards compact */
+  .budget-card {
+    padding: 16px 14px;
+  }
+
+  .budget-card-category {
+    font-size: 0.88rem;
+  }
+
+  .budget-spent {
+    font-size: 0.8rem;
+  }
+
+  .budget-limit {
+    font-size: 0.72rem;
+  }
+
+  /* Modal compact */
+  .modal-card {
+    padding: 18px 14px;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+  }
+
+  .modal-text {
+    font-size: 0.82rem;
+  }
+
+  /* Auth screen compact */
+  .auth-card {
+    padding: 24px 16px;
+  }
+
+  .auth-title {
+    font-size: 1.4rem;
+  }
+
+  .auth-subtitle {
+    font-size: 0.82rem;
+    margin-bottom: 20px;
+  }
+
+  .code-display {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    padding: 10px 12px;
+  }
+
+  .auth-tab {
+    font-size: 0.8rem;
+    padding: 8px 10px;
+  }
+
+  /* Date strip compact */
+  .date-strip-item {
+    min-width: 44px;
+    width: 44px;
+    height: 58px;
+  }
+
+  .date-strip-item .day-num {
+    font-size: 0.92rem;
+  }
+
+  .date-strip-item .day-name {
+    font-size: 0.55rem;
+  }
+
+  /* Rekap header buttons */
+  .rekap-header > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .rekap-header > div .btn-submit {
+    width: 100%;
+    font-size: 0.82rem;
+    padding: 10px 14px;
+  }
+
+  .rekap-summary-value {
+    font-size: 0.95rem;
+  }
+
+  .rekap-summary-label {
+    font-size: 0.65rem;
+  }
+
+  /* Pagination compact */
+  .pagination-controls {
+    gap: 8px;
+  }
+
+  .btn-page {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    min-height: 38px;
+  }
+
+  .page-info {
+    font-size: 0.75rem;
+  }
+
+  /* Wallets compact */
+  .wallet-item {
+    min-width: 150px;
+    padding: 12px 16px;
+  }
+
+  .wallet-name {
+    font-size: 0.78rem;
+  }
+
+  .wallet-bal {
+    font-size: 0.95rem;
+  }
+
+  /* MAX button on amount input */
+  .btn-max {
+    min-width: 44px;
+    min-height: 32px;
+  }
 }
 
 /* Additional small screen adjustments */
@@ -1909,6 +2402,7 @@ body {
   padding-bottom: 8px; /* space for scrollbar */
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
+  -webkit-overflow-scrolling: touch;
 }
 
 .wallets-container::-webkit-scrollbar {
@@ -1932,13 +2426,14 @@ body {
   justify-content: center;
   align-items: flex-start;
   min-width: 180px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow);
   transition: transform var(--transition), box-shadow var(--transition);
+  flex-shrink: 0;
 }
 
 .wallet-item:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .wallet-item.wallet-add {
@@ -1948,11 +2443,12 @@ body {
   justify-content: center;
   cursor: pointer;
   color: var(--text-secondary);
+  min-height: 80px;
 }
 
 .wallet-item.wallet-add:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .wallet-name {
@@ -1967,4 +2463,11 @@ body {
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+}
+
+/* ===================================================
+   PROGRESS BAR in Budget — Light theme fix
+   =================================================== */
+[data-theme="light"] .progress-bar-container {
+  background: rgba(0, 0, 0, 0.06);
 }

@@ -99,7 +99,7 @@
                         <label for="register-token">Buat Token Unik (Min. 1 Huruf & 1 Angka)</label>
                         <div style="position: relative; display: flex; align-items: center;">
                             <input type="text" id="register-token" placeholder="Contoh: Budi123" maxlength="15" autocomplete="off" style="flex: 1; padding-right: 40px;">
-                            <button type="button" onclick="generateRandomToken('register-token')" style="position: absolute; right: 8px; background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.7; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Auto-Generate Token">🎲</button>
+                            <button type="button" onclick="generateRandomToken('register-token')" style="position: absolute; right: 8px; background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.7; transition: 0.2s; min-width: 44px; min-height: 44px; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Auto-Generate Token">🎲</button>
                         </div>
                     </div>
                     <button class="btn-submit btn-submit-glow" onclick="registerUser()">Daftar Akun</button>
@@ -179,7 +179,12 @@
                     <img src="aset/logo.png" alt="ArcadeFin Logo" class="header-logo-img">
                     <span class="header-brand-name">ArcadeFin</span>
                 </div>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                <div class="header-actions">
+                    <div class="backup-restore-row">
+                        <button class="btn-backup" onclick="downloadBackupJSON()" title="Unduh Backup Data">📥 Backup</button>
+                        <button class="btn-backup btn-restore" onclick="document.getElementById('restore-file-input').click()" title="Pulihkan Data dari File">📤 Restore</button>
+                        <input type="file" id="restore-file-input" accept=".json" onchange="restoreFromJSON(event)">
+                    </div>
                     <button class="btn-action" id="btn-theme-toggle" onclick="toggleTheme()">☀️ Terang</button>
                     <button class="btn-action" onclick="showEditTokenModal()">✏️ Edit Token</button>
                     <button class="btn-logout" onclick="logoutUser()">Logout</button>
@@ -266,7 +271,7 @@
                         <label for="amount">Jumlah (Rp)</label>
                         <div style="position: relative; display: flex; align-items: center;">
                             <input type="text" id="amount" placeholder="Contoh: 50.000" oninput="formatRibuan(this)" style="flex: 1; padding-right: 60px;">
-                            <button type="button" class="btn-max" onclick="fillMaxAmount()" style="position: absolute; right: 8px; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">MAX</button>
+                            <button type="button" class="btn-max" onclick="fillMaxAmount()" style="position: absolute; right: 8px; padding: 6px 12px; font-size: 0.75rem; border-radius: 4px; background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; transition: opacity 0.2s; min-height: 32px; min-width: 44px;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">MAX</button>
                         </div>
                     </div>
 
@@ -340,6 +345,17 @@
                         </div>
                     </div>
 
+                    <!-- Date Strip — Horizontal Scrollable Date Picker -->
+                    <div class="date-strip-container" id="date-strip-container">
+                        <div class="date-strip-header">
+                            <span class="date-strip-month" id="date-strip-month"></span>
+                            <button class="date-strip-clear" id="date-strip-clear" onclick="clearDateStripFilter()" style="display:none;">✕ Hapus Filter</button>
+                        </div>
+                        <div class="date-strip" id="date-strip">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+
                     <div class="table-wrapper">
                         <table>
                             <thead>
@@ -374,7 +390,7 @@
             <div class="glass-card animate-in">
                 <div class="rekap-header">
                     <h2 class="card-title"><span class="icon">📋</span> Rekapitulasi & Budget Bulanan</h2>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button class="btn-submit btn-add-budget" onclick="showBudgetModal()">+ Atur Budget</button>
                         <button class="btn-submit" style="padding: 12px 20px; font-weight: bold; border-radius: var(--radius); border: none; cursor: pointer; color: white; background: var(--primary);" onclick="showResetDataModal()">🔄 Reset Siklus</button>
                     </div>
@@ -396,11 +412,11 @@
                 <!-- Rekap Summary Cards -->
                 <div class="rekap-summary" id="rekap-summary">
                     <div class="rekap-summary-card">
-                        <div class="rekap-summary-label">Total Pengeluaran (Filter)</div>
+                        <div class="rekap-summary-label">Total Pengeluaran</div>
                         <div class="rekap-summary-value expense-color" id="rekap-total-expense">Rp 0</div>
                     </div>
                     <div class="rekap-summary-card">
-                        <div class="rekap-summary-label">Total Pemasukan (Filter)</div>
+                        <div class="rekap-summary-label">Total Pemasukan</div>
                         <div class="rekap-summary-value income-color" id="rekap-total-income">Rp 0</div>
                     </div>
                     <div class="rekap-summary-card">
@@ -457,7 +473,7 @@
             <div class="form-group" style="text-align: left; margin-bottom: 20px;">
                 <div style="position: relative; display: flex; align-items: center;">
                     <input type="text" id="new-token-input" placeholder="Contoh: Arcade2024" maxlength="15" style="flex: 1; padding-right: 40px;">
-                    <button type="button" onclick="generateRandomToken('new-token-input')" style="position: absolute; right: 8px; background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.7; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Auto-Generate Token">🎲</button>
+                    <button type="button" onclick="generateRandomToken('new-token-input')" style="position: absolute; right: 8px; background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.7; transition: 0.2s; min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Auto-Generate Token">🎲</button>
                 </div>
             </div>
             <div class="modal-actions">
@@ -558,7 +574,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=2"></script>
+    <script src="app.js?v=3"></script>
 </body>
 
 </html>
