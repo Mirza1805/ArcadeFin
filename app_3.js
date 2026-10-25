@@ -63,6 +63,26 @@ function decrypt(cipherText, secretKey) {
   }
 }
 
+// --- Parse Transaction Timestamp Safely (UTC normalized) ---
+function parseTrxTime(trx) {
+  if (trx && trx.created_at) {
+    let s = trx.created_at.toString().trim();
+    if (!s.endsWith('Z') && !s.slice(10).includes('+') && !s.slice(10).includes('-')) {
+      s += 'Z';
+    }
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+  }
+  if (trx && trx.date) {
+    const parts = trx.date.split('-').map(Number);
+    if (parts.length === 3) {
+      return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 0, 0, 0));
+    }
+    return new Date(trx.date);
+  }
+  return new Date();
+}
+
 // ===================================================
 // 3. UI HELPERS — Toast & Auth Form Transitions
 // ===================================================
@@ -676,21 +696,27 @@ async function fetchTransactions() {
 // --- Time Filter Logic ---
 function getFilteredData(filterValue, sourceData) {
   const now = new Date();
-  const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-  const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentDay = now.getDate();
 
   if (filterValue === 'today') {
-    return sourceData.filter(trx => trx.date === todayStr);
+    return sourceData.filter(trx => {
+      if (!trx.date) return false;
+      const parts = trx.date.split('-').map(Number);
+      return parts[0] === currentYear && (parts[1] - 1) === currentMonth && parts[2] === currentDay;
+    });
   } else if (filterValue === 'month') {
     return sourceData.filter(trx => {
-      const d = new Date(trx.date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      if (!trx.date) return false;
+      const parts = trx.date.split('-').map(Number);
+      return parts[0] === currentYear && (parts[1] - 1) === currentMonth;
     });
   } else if (filterValue === 'year') {
     return sourceData.filter(trx => {
-      const d = new Date(trx.date);
-      return d.getFullYear() === currentYear;
+      if (!trx.date) return false;
+      const parts = trx.date.split('-').map(Number);
+      return parts[0] === currentYear;
     });
   }
   // 'all'
@@ -822,6 +848,13 @@ function updateBalance(transactions) {
   let totalIncome = 0;
   let totalExpense = 0;
 
+  const userCode = localStorage.getItem('user_code');
+  const customStartDateStr = userCode ? localStorage.getItem('budget_cycle_' + userCode) : null;
+  let cycleStartDate = null;
+  if (customStartDateStr) {
+    cycleStartDate = new Date(customStartDateStr);
+  }
+
   // Initialize wallet balances
   const walletBalances = {};
   let totalWalletsInitial = 0;
@@ -837,13 +870,17 @@ function updateBalance(transactions) {
     const amt = Number(trx.amount);
     const isLegacyOrigin = !trx.wallet_id;
     const isLegacyDest = !trx.to_wallet_id;
+    const trxTime = parseTrxTime(trx);
+
+    // Hitung pemasukan & pengeluaran berdasarkan siklus aktif (jika ada reset siklus)
+    const isCurrentCycle = cycleStartDate ? (trxTime >= cycleStartDate) : true;
 
     if (trx.type === 'income') {
-      totalIncome += amt;
+      if (isCurrentCycle) totalIncome += amt;
       if (isLegacyOrigin) legacyBalance += amt;
       else if (walletBalances[trx.wallet_id] !== undefined) walletBalances[trx.wallet_id] += amt;
     } else if (trx.type === 'expense') {
-      totalExpense += amt;
+      if (isCurrentCycle) totalExpense += amt;
       if (isLegacyOrigin) legacyBalance -= amt;
       else if (walletBalances[trx.wallet_id] !== undefined) walletBalances[trx.wallet_id] -= amt;
     } else if (trx.type === 'transfer') {
@@ -1003,7 +1040,9 @@ async function tambahTransaksi() {
 
   const payload = {
     amount: encryptedAmount, type: encryptedType, category: encryptedCategory, description: encryptedDescription,
-    date: new Date().toISOString().split('T')[0], user_code: userCode,
+    date: new Date().toISOString().split('T')[0],
+    created_at: new Date().toISOString(),
+    user_code: userCode,
     wallet_id: walletId === 'legacy' ? null : walletId
   };
 
@@ -1458,11 +1497,30 @@ async function fetchBudgets() {
   const decryptedData = (data || []).map(b => {
     return {
       ...b,
-      category: decrypt(b.category, userCode),
+      category: (decrypt(b.category, userCode) || '').trim(),
       amount_limit: Number(decrypt(b.amount_limit, userCode)) || 0
     };
   });
-  allBudgets = decryptedData;
+
+  // Konsolidasi jika sebelumnya ada kategori ganda (case-insensitive)
+  const mergedBudgets = [];
+  const catMap = new Map();
+
+  for (const b of decryptedData) {
+    const key = (b.category || '').toLowerCase();
+    if (catMap.has(key)) {
+      const existing = catMap.get(key);
+      existing.amount_limit += b.amount_limit;
+      if (!existing.allIds) existing.allIds = [existing.id];
+      existing.allIds.push(b.id);
+    } else {
+      const clone = { ...b, allIds: [b.id] };
+      catMap.set(key, clone);
+      mergedBudgets.push(clone);
+    }
+  }
+
+  allBudgets = mergedBudgets;
 
   // Populate datalist whenever budgets are fetched
   populateBudgetCategoryDatalist();
@@ -1490,10 +1548,10 @@ async function saveBudget() {
     return;
   }
 
-  const category = document.getElementById('budget-category').value.trim();
+  const categoryInput = document.getElementById('budget-category').value.trim();
   const amountLimit = parseRibuan(document.getElementById('budget-amount').value);
 
-  if (!category) {
+  if (!categoryInput) {
     showToast('Perhatian', 'Kategori harus diisi!', 'warning');
     return;
   }
@@ -1502,35 +1560,88 @@ async function saveBudget() {
     return;
   }
 
-  const encryptedCategory = encrypt(category, userCode);
-  const encryptedAmountLimit = encrypt(amountLimit.toString(), userCode);
+  // Cek apakah ada budget dengan kategori yang sama (case-insensitive & trimmed)
+  const existingBudget = allBudgets.find(b =>
+    (b.category || '').trim().toLowerCase() === categoryInput.toLowerCase() &&
+    (!editBudgetId || b.id !== editBudgetId)
+  );
 
   if (editBudgetId) {
-    // Update existing budget
-    const { error } = await supabaseClient
-      .from('budgets')
-      .update({ amount_limit: encryptedAmountLimit, category: encryptedCategory })
-      .eq('id', editBudgetId)
-      .eq('user_code', userCode);
+    if (existingBudget) {
+      // Menggabungkan jika nama kategori saat diedit diubah menjadi kategori lain yang sudah ada
+      const combinedLimit = Number(existingBudget.amount_limit) + amountLimit;
+      const encCombinedLimit = encrypt(combinedLimit.toString(), userCode);
 
-    if (error) {
-      showToast('Gagal', 'Gagal memperbarui budget: ' + error.message, 'error');
-      return;
+      const { error: updErr } = await supabaseClient
+        .from('budgets')
+        .update({ amount_limit: encCombinedLimit })
+        .eq('id', existingBudget.id)
+        .eq('user_code', userCode);
+
+      if (updErr) {
+        showToast('Gagal', 'Gagal menggabungkan budget: ' + updErr.message, 'error');
+        return;
+      }
+
+      await supabaseClient
+        .from('budgets')
+        .delete()
+        .eq('id', editBudgetId)
+        .eq('user_code', userCode);
+
+      showToast('Berhasil', `Budget digabungkan ke "${existingBudget.category}"! Total baru: Rp ${toRibuan(combinedLimit)}`, 'success');
+    } else {
+      // Update data budget yang sedang diedit
+      const encryptedCategory = encrypt(categoryInput, userCode);
+      const encryptedAmountLimit = encrypt(amountLimit.toString(), userCode);
+
+      const { error } = await supabaseClient
+        .from('budgets')
+        .update({ amount_limit: encryptedAmountLimit, category: encryptedCategory })
+        .eq('id', editBudgetId)
+        .eq('user_code', userCode);
+
+      if (error) {
+        showToast('Gagal', 'Gagal memperbarui budget: ' + error.message, 'error');
+        return;
+      }
+      showToast('Berhasil', `Budget kategori "${categoryInput}" berhasil diperbarui!`, 'success');
     }
-    showToast('Berhasil', `Budget kategori "${category}" berhasil diperbarui!`, 'success');
   } else {
-    // Insert new budget
-    const { error } = await supabaseClient.from('budgets').insert([{
-      user_code: userCode,
-      category: encryptedCategory,
-      amount_limit: encryptedAmountLimit
-    }]);
+    // Mode Tambah Baru:
+    if (existingBudget) {
+      // KATEGORI SUDAH ADA: Akumulasikan / tambahkan batas budget yang ada!
+      const newLimit = Number(existingBudget.amount_limit) + amountLimit;
+      const encryptedAmountLimit = encrypt(newLimit.toString(), userCode);
 
-    if (error) {
-      showToast('Gagal', 'Gagal menyimpan budget: ' + error.message, 'error');
-      return;
+      const { error } = await supabaseClient
+        .from('budgets')
+        .update({ amount_limit: encryptedAmountLimit })
+        .eq('id', existingBudget.id)
+        .eq('user_code', userCode);
+
+      if (error) {
+        showToast('Gagal', 'Gagal menambah budget: ' + error.message, 'error');
+        return;
+      }
+      showToast('Berhasil', `Budget "${existingBudget.category}" berhasil ditambah Rp ${toRibuan(amountLimit)} (Total: Rp ${toRibuan(newLimit)})!`, 'success');
+    } else {
+      // Kategori belum pernah ada, insert baru
+      const encryptedCategory = encrypt(categoryInput, userCode);
+      const encryptedAmountLimit = encrypt(amountLimit.toString(), userCode);
+
+      const { error } = await supabaseClient.from('budgets').insert([{
+        user_code: userCode,
+        category: encryptedCategory,
+        amount_limit: encryptedAmountLimit
+      }]);
+
+      if (error) {
+        showToast('Gagal', 'Gagal menyimpan budget: ' + error.message, 'error');
+        return;
+      }
+      showToast('Berhasil', `Budget kategori "${categoryInput}" berhasil disimpan!`, 'success');
     }
-    showToast('Berhasil', `Budget kategori "${category}" berhasil disimpan!`, 'success');
   }
 
   closeBudgetModal();
@@ -1571,10 +1682,13 @@ async function confirmDeleteBudget() {
   }
 
   const userCode = localStorage.getItem('user_code');
+  const targetBudget = allBudgets.find(b => b.id === deleteBudgetId);
+  const idsToDelete = targetBudget && targetBudget.allIds ? targetBudget.allIds : [deleteBudgetId];
+
   const { error } = await supabaseClient
     .from('budgets')
     .delete()
-    .eq('id', deleteBudgetId)
+    .in('id', idsToDelete)
     .eq('user_code', userCode);
 
   closeDeleteBudgetModal();
@@ -1596,8 +1710,20 @@ async function renderRekapPage() {
   // --- Populate category dropdown for transaction form ---
   populateBudgetCategoryDatalist();
 
+  const userCode = localStorage.getItem('user_code');
+  const customStartDateStr = userCode ? localStorage.getItem('budget_cycle_' + userCode) : null;
+  let cycleStartDate = null;
+  if (customStartDateStr) {
+    cycleStartDate = new Date(customStartDateStr);
+  }
+
   const rekapFilter = document.getElementById('rekap-time-filter').value;
-  const filteredTrx = getFilteredData(rekapFilter, allTransactions);
+  let filteredTrx = getFilteredData(rekapFilter, allTransactions);
+
+  // Jika siklus telah direset, untuk filter 'month' atau 'today', hanya hitung transaksi dari siklus aktif
+  if (cycleStartDate && (rekapFilter === 'month' || rekapFilter === 'today')) {
+    filteredTrx = filteredTrx.filter(trx => parseTrxTime(trx) >= cycleStartDate);
+  }
 
   // Calculate summary based on filtered transactions
   let totalExpenseFiltered = 0;
@@ -1615,26 +1741,19 @@ async function renderRekapPage() {
   allBudgets.forEach(b => totalBudget += Number(b.amount_limit));
   document.getElementById('rekap-total-budget').textContent = 'Rp ' + toRibuan(totalBudget);
 
-  // --- KUNCI: Untuk progress bar, SELALU gunakan akumulasi bulan berjalan ---
+  // --- KUNCI: Untuk progress bar, gunakan akumulasi siklus berjalan ---
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  // Cek apakah user punya custom budget cycle (manual reset)
-  const userCode = localStorage.getItem('user_code');
-  const customStartDateStr = localStorage.getItem('budget_cycle_' + userCode);
-  let cycleStartDate = null;
-  if (customStartDateStr) {
-    cycleStartDate = new Date(customStartDateStr);
-  }
-
   const cycleExpenses = allTransactions.filter(trx => {
     if (trx.type !== 'expense') return false;
-    const trxTime = trx.created_at ? new Date(trx.created_at) : new Date(trx.date);
+    const trxTime = parseTrxTime(trx);
     if (cycleStartDate) {
       return trxTime >= cycleStartDate;
     } else {
-      return trxTime.getMonth() === currentMonth && trxTime.getFullYear() === currentYear;
+      const parts = (trx.date || '').split('-').map(Number);
+      return parts[0] === currentYear && (parts[1] - 1) === currentMonth;
     }
   });
 
@@ -1644,10 +1763,10 @@ async function renderRekapPage() {
     totalCycleExpense += Number(trx.amount);
   });
 
-  // Aggregate cycle expenses by category (case-insensitive)
+  // Aggregate cycle expenses by category (case-insensitive & trimmed)
   const expenseByCategory = {};
   cycleExpenses.forEach(trx => {
-    const catKey = trx.category.toLowerCase();
+    const catKey = (trx.category || '').trim().toLowerCase();
     expenseByCategory[catKey] = (expenseByCategory[catKey] || 0) + Number(trx.amount);
   });
 
@@ -1712,7 +1831,7 @@ async function renderRekapPage() {
   grid.innerHTML = '';
 
   allBudgets.forEach(budget => {
-    const catKey = budget.category.toLowerCase();
+    const catKey = (budget.category || '').trim().toLowerCase();
     const monthlySpent = expenseByCategory[catKey] || 0;
     const limit = Number(budget.amount_limit);
     const percent = limit > 0 ? Math.round((monthlySpent / limit) * 100) : 0;
@@ -1778,14 +1897,25 @@ function toggleNewCategory() {
 function populateBudgetCategoryDatalist() {
   const select = document.getElementById('category-select');
   if (!select) return;
+  const currentVal = select.value;
   select.innerHTML = '<option value="">-- Pilih Kategori --</option>';
+
+  const seenCategories = new Set();
   allBudgets.forEach(b => {
-    const opt = document.createElement('option');
-    opt.value = b.category;
-    opt.textContent = b.category;
-    select.appendChild(opt);
+    const trimmed = (b.category || '').trim();
+    const key = trimmed.toLowerCase();
+    if (trimmed && !seenCategories.has(key)) {
+      seenCategories.add(key);
+      const opt = document.createElement('option');
+      opt.value = trimmed;
+      opt.textContent = trimmed;
+      select.appendChild(opt);
+    }
   });
   select.insertAdjacentHTML('beforeend', '<option value="new">+ Tambah Kategori Baru...</option>');
+  if (currentVal && Array.from(select.options).some(o => o.value === currentVal)) {
+    select.value = currentVal;
+  }
 }
 
 // ===================================================
@@ -1905,9 +2035,10 @@ async function confirmResetData() {
   localStorage.setItem('budget_cycle_' + userCode, new Date().toISOString());
 
   closeResetDataModal();
-  showToast('Berhasil', 'Siklus Budget berhasil direset mulai hari ini!', 'success');
+  showToast('Berhasil', 'Siklus Budget berhasil direset! Total pengeluaran & pemasukan kembali ke Rp 0.', 'success');
 
-  // Refresh UI Rekap seketika
+  // Refresh UI Dashboard & Rekap seketika
+  updateBalance(allTransactions);
   if (currentPage === 'page-rekap') {
     renderRekapPage();
   }
