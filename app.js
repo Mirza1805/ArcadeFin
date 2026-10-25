@@ -152,7 +152,7 @@ function showDashboard() {
   document.getElementById('dashboard-screen').classList.remove('hidden');
   const userName = localStorage.getItem('user_name') || '-';
   document.getElementById('user-display-name').textContent = userName;
-  fetchWallets().then(() => fetchTransactions());
+  fetchWallets().then(() => fetchTransactions()).then(() => fetchBudgets());
 }
 
 // --- SPA Page Switching ---
@@ -398,6 +398,7 @@ function backToLoginWithCode() {
 // ===================================================
 
 let isBalanceHidden = false;
+let isWalletsHidden = false;
 
 function toggleBalanceVisibility() {
   isBalanceHidden = !isBalanceHidden;
@@ -431,6 +432,11 @@ function toggleBalanceVisibility() {
     eyeOpen.classList.remove('hidden');
     eyeClosed.classList.add('hidden');
   }
+}
+
+function toggleWalletsVisibility() {
+  isWalletsHidden = !isWalletsHidden;
+  updateBalance(allTransactions);
 }
 
 // ===================================================
@@ -889,7 +895,7 @@ function updateBalance(transactions) {
         <div style="display:flex; justify-content:space-between; align-items:center; width: 100%;">
           <span class="wallet-name" style="color:var(--expense-text)">⚠️ Belum Dikategorikan</span>
         </div>
-        <span class="wallet-bal ${isBalanceHidden ? 'blurred' : ''}" data-value="${balStr}">${isBalanceHidden ? 'Rp •••••••' : balStr}</span>
+        <span class="wallet-bal ${isWalletsHidden ? 'blurred' : ''}" data-value="${balStr}">${isWalletsHidden ? 'Rp •••••••' : balStr}</span>
       `;
       walletsContainer.appendChild(div);
     }
@@ -905,7 +911,7 @@ function updateBalance(transactions) {
           <span class="wallet-name">${w.wallet_name}</span>
           <button class="btn-action btn-action-delete" style="padding: 2px 4px; font-size: 0.8rem; margin-bottom: 6px;" onclick="hapusDompet(${w.id}, '${w.wallet_name}')" title="Hapus Dompet">🗑️</button>
         </div>
-        <span class="wallet-bal ${isBalanceHidden ? 'blurred' : ''}" data-value="${balStr}">${isBalanceHidden ? 'Rp •••••••' : balStr}</span>
+        <span class="wallet-bal ${isWalletsHidden ? 'blurred' : ''}" data-value="${balStr}">${isWalletsHidden ? 'Rp •••••••' : balStr}</span>
       `;
       walletsContainer.appendChild(div);
     });
@@ -978,7 +984,7 @@ async function tambahTransaksi() {
 
   const amount = parseRibuan(document.getElementById('amount').value);
   const type = document.getElementById('type').value;
-  const category = document.getElementById('category').value.trim();
+  let category = document.getElementById('category-select').value === 'new' ? document.getElementById('category').value.trim() : document.getElementById('category-select').value;
   const description = document.getElementById('description').value.trim();
   const walletId = document.getElementById('wallet-id').value;
   const toWalletId = document.getElementById('to-wallet-id').value;
@@ -1035,7 +1041,22 @@ function editTransaksi(id) {
 
   // Masukkan data ke form
   document.getElementById('amount').value = toRibuan(trx.amount);
-  document.getElementById('category').value = trx.category;
+  
+  const catSelect = document.getElementById('category-select');
+  const catInput = document.getElementById('category');
+  if (catSelect && catInput) {
+    const optionExists = Array.from(catSelect.options).some(opt => opt.value === trx.category);
+    if (optionExists && trx.category !== '') {
+      catSelect.value = trx.category;
+      catInput.classList.add('hidden');
+      catInput.value = '';
+    } else {
+      catSelect.value = 'new';
+      catInput.classList.remove('hidden');
+      catInput.value = trx.category || '';
+    }
+  }
+
   document.getElementById('description').value = trx.description || '';
   if (trx.wallet_id) {
     document.getElementById('wallet-id').value = trx.wallet_id;
@@ -1064,7 +1085,13 @@ function cancelEdit() {
   editTrxId = null;
   document.getElementById('amount').value = '';
   document.getElementById('type').value = 'expense';
-  document.getElementById('category').value = '';
+  const catSelect = document.getElementById('category-select');
+  if (catSelect) catSelect.value = '';
+  const catInput = document.getElementById('category');
+  if (catInput) {
+    catInput.value = '';
+    catInput.classList.add('hidden');
+  }
   document.getElementById('description').value = '';
   toggleTransferDest();
 
@@ -1090,7 +1117,7 @@ async function updateTransaksi() {
   const amountRaw = document.getElementById('amount').value;
   const amount = parseRibuan(amountRaw);
   const type = document.getElementById('type').value;
-  const category = document.getElementById('category').value.trim();
+  let category = document.getElementById('category-select').value === 'new' ? document.getElementById('category').value.trim() : document.getElementById('category-select').value;
   const description = document.getElementById('description').value.trim();
   const walletId = document.getElementById('wallet-id').value;
   const toWalletId = document.getElementById('to-wallet-id').value;
@@ -1436,6 +1463,10 @@ async function fetchBudgets() {
     };
   });
   allBudgets = decryptedData;
+
+  // Populate datalist whenever budgets are fetched
+  populateBudgetCategoryDatalist();
+
   return allBudgets;
 }
 
@@ -1562,6 +1593,9 @@ async function confirmDeleteBudget() {
 async function renderRekapPage() {
   await fetchBudgets();
 
+  // --- Populate category dropdown for transaction form ---
+  populateBudgetCategoryDatalist();
+
   const rekapFilter = document.getElementById('rekap-time-filter').value;
   const filteredTrx = getFilteredData(rekapFilter, allTransactions);
 
@@ -1596,12 +1630,18 @@ async function renderRekapPage() {
 
   const cycleExpenses = allTransactions.filter(trx => {
     if (trx.type !== 'expense') return false;
-    const d = new Date(trx.date);
+    const trxTime = trx.created_at ? new Date(trx.created_at) : new Date(trx.date);
     if (cycleStartDate) {
-      return d >= cycleStartDate;
+      return trxTime >= cycleStartDate;
     } else {
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      return trxTime.getMonth() === currentMonth && trxTime.getFullYear() === currentYear;
     }
+  });
+
+  // Total pengeluaran siklus ini (untuk semua kategori)
+  let totalCycleExpense = 0;
+  cycleExpenses.forEach(trx => {
+    totalCycleExpense += Number(trx.amount);
   });
 
   // Aggregate cycle expenses by category (case-insensitive)
@@ -1611,13 +1651,50 @@ async function renderRekapPage() {
     expenseByCategory[catKey] = (expenseByCategory[catKey] || 0) + Number(trx.amount);
   });
 
-  // Also aggregate filtered expenses by category for display text
-  const filteredExpenseByCategory = {};
-  filteredTrx.forEach(trx => {
-    if (trx.type !== 'expense') return;
-    const catKey = trx.category.toLowerCase();
-    filteredExpenseByCategory[catKey] = (filteredExpenseByCategory[catKey] || 0) + Number(trx.amount);
+
+
+  // --- Kekurangan Dana Budget ---
+  // Hitung currentBalance (total kekayaan) dari updateBalance logic
+  let currentBalance = 0;
+  const walletBalances = {};
+  allWallets.forEach(w => {
+    walletBalances[w.id] = w.initial_balance;
   });
+  let legacyBalance = 0;
+  allTransactions.forEach(trx => {
+    const amt = Number(trx.amount);
+    const isLegacyOrigin = !trx.wallet_id;
+    const isLegacyDest = !trx.to_wallet_id;
+    if (trx.type === 'income') {
+      if (isLegacyOrigin) legacyBalance += amt;
+      else if (walletBalances[trx.wallet_id] !== undefined) walletBalances[trx.wallet_id] += amt;
+    } else if (trx.type === 'expense') {
+      if (isLegacyOrigin) legacyBalance -= amt;
+      else if (walletBalances[trx.wallet_id] !== undefined) walletBalances[trx.wallet_id] -= amt;
+    } else if (trx.type === 'transfer') {
+      if (isLegacyOrigin) legacyBalance -= amt;
+      else if (walletBalances[trx.wallet_id] !== undefined) walletBalances[trx.wallet_id] -= amt;
+      if (isLegacyDest) legacyBalance += amt;
+      else if (walletBalances[trx.to_wallet_id] !== undefined) walletBalances[trx.to_wallet_id] += amt;
+    }
+  });
+  let sumWalletBalances = 0;
+  for (let key in walletBalances) {
+    sumWalletBalances += walletBalances[key];
+  }
+  currentBalance = legacyBalance + sumWalletBalances;
+
+  let kekurangan = totalBudget - currentBalance;
+  const kekuranganEl = document.getElementById('rekap-kekurangan-budget');
+  if (kekuranganEl) {
+    if (kekurangan > 0) {
+      kekuranganEl.textContent = 'Rp ' + toRibuan(kekurangan);
+      kekuranganEl.style.color = 'var(--expense-text)';
+    } else {
+      kekuranganEl.textContent = 'Rp 0 (Aman)';
+      kekuranganEl.style.color = 'var(--income-text)';
+    }
+  }
 
   // Render budget cards
   const grid = document.getElementById('budget-cards-grid');
@@ -1637,11 +1714,19 @@ async function renderRekapPage() {
   allBudgets.forEach(budget => {
     const catKey = budget.category.toLowerCase();
     const monthlySpent = expenseByCategory[catKey] || 0;
-    const filteredSpent = filteredExpenseByCategory[catKey] || 0;
     const limit = Number(budget.amount_limit);
     const percent = limit > 0 ? Math.round((monthlySpent / limit) * 100) : 0;
     const isOver = monthlySpent > limit;
     const barWidth = Math.min(percent, 100);
+
+    // Hitung sisa budget per kategori
+    let sisaBudget = limit - monthlySpent;
+    let sisaBudgetText = '';
+    if (sisaBudget < 0) {
+      sisaBudgetText = `⚠️ Overbudget: Rp ${toRibuan(Math.abs(sisaBudget))}`;
+    } else {
+      sisaBudgetText = `Sisa Budget: Rp ${toRibuan(sisaBudget)}`;
+    }
 
     const card = document.createElement('div');
     card.className = `budget-card${isOver ? ' overbudget' : ''}`;
@@ -1658,14 +1743,14 @@ async function renderRekapPage() {
         </div>
       </div>
       <div class="budget-card-amounts">
-        <span class="budget-spent ${isOver ? 'expense-color' : ''}">Rp ${toRibuan(filteredSpent)} <small style="color:var(--text-muted);font-weight:400;">(filter)</small></span>
+        <span class="budget-spent ${isOver ? 'expense-color' : ''}">Rp ${toRibuan(monthlySpent)}</span>
         <span class="budget-limit">/ Rp ${toRibuan(limit)}</span>
       </div>
       <div class="progress-bar-container">
         <div class="progress-bar-fill ${isOver ? 'bar-red' : 'bar-green'}" style="width: ${barWidth}%"></div>
       </div>
       <div class="budget-card-percent ${isOver ? 'percent-red' : 'percent-green'}">
-        ${isOver ? '⚠️ Overbudget!' : ''} ${percent}% (siklus ini: Rp ${toRibuan(monthlySpent)})
+        ${percent}% — ${sisaBudgetText}
       </div>
     `;
 
@@ -1675,6 +1760,32 @@ async function renderRekapPage() {
 
 function applyRekapFilter() {
   renderRekapPage();
+}
+
+function toggleNewCategory() {
+  const select = document.getElementById('category-select');
+  const input = document.getElementById('category');
+  if (select.value === 'new') {
+    input.classList.remove('hidden');
+    input.value = '';
+    input.focus();
+  } else {
+    input.classList.add('hidden');
+  }
+}
+
+// --- Populate category select on fetchBudgets completion (juga saat login/init) ---
+function populateBudgetCategoryDatalist() {
+  const select = document.getElementById('category-select');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- Pilih Kategori --</option>';
+  allBudgets.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b.category;
+    opt.textContent = b.category;
+    select.appendChild(opt);
+  });
+  select.insertAdjacentHTML('beforeend', '<option value="new">+ Tambah Kategori Baru...</option>');
 }
 
 // ===================================================
@@ -1790,9 +1901,8 @@ async function confirmResetData() {
   const userCode = localStorage.getItem('user_code');
   if (!userCode) return;
 
-  // Simpan tanggal hari ini dengan format YYYY-MM-DD
-  const todayStr = new Date().toISOString().split('T')[0];
-  localStorage.setItem('budget_cycle_' + userCode, todayStr);
+  // Simpan timestamp presisi ISO
+  localStorage.setItem('budget_cycle_' + userCode, new Date().toISOString());
 
   closeResetDataModal();
   showToast('Berhasil', 'Siklus Budget berhasil direset mulai hari ini!', 'success');
@@ -1801,4 +1911,53 @@ async function confirmResetData() {
   if (currentPage === 'page-rekap') {
     renderRekapPage();
   }
+}
+
+async function exportJSON() {
+  const userCode = localStorage.getItem('user_code');
+  if (!userCode) return showToast('Error', 'Login diperlukan', 'error');
+
+  // Fetch all related data
+  const [u, w, t, b] = await Promise.all([
+    supabaseClient.from('users').select('*').eq('user_code', userCode).single(),
+    supabaseClient.from('wallets').select('*').eq('user_code', userCode),
+    supabaseClient.from('transactions').select('*').eq('user_code', userCode),
+    supabaseClient.from('budgets').select('*').eq('user_code', userCode)
+  ]);
+
+  const backupData = { user: u.data, wallets: w.data, transactions: t.data, budgets: b.data };
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
+  const downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute("download", `ArcadeFin_Backup_${userCode}_${new Date().toISOString().split('T')[0]}.json`);
+  document.body.appendChild(downloadAnchorNode);
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
+}
+
+async function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if(!data.user || !data.wallets) throw new Error("Format JSON tidak valid");
+      
+      const userCode = data.user.user_code;
+      localStorage.setItem('user_code', userCode);
+      
+      // Upsert data
+      await supabaseClient.from('users').upsert([data.user]);
+      if(data.wallets.length) await supabaseClient.from('wallets').upsert(data.wallets);
+      if(data.transactions.length) await supabaseClient.from('transactions').upsert(data.transactions);
+      if(data.budgets.length) await supabaseClient.from('budgets').upsert(data.budgets);
+
+      showToast("Berhasil", "Data berhasil dipulihkan!", "success");
+      setTimeout(() => location.reload(), 1500);
+    } catch (err) {
+      showToast("Error", "Gagal memulihkan data: " + err.message, "error");
+    }
+  };
+  reader.readAsText(file);
 }
