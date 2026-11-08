@@ -1080,7 +1080,7 @@ function editTransaksi(id) {
 
   // Masukkan data ke form
   document.getElementById('amount').value = toRibuan(trx.amount);
-
+  
   const catSelect = document.getElementById('category-select');
   const catInput = document.getElementById('category');
   if (catSelect && catInput) {
@@ -1447,6 +1447,14 @@ async function saveNewToken() {
       await supabaseClient.from('users').delete().eq('user_code', oldToken);
     }
 
+    // 6. Update localStorage
+    localStorage.setItem('user_code', newToken);
+    const customCycle = localStorage.getItem('budget_cycle_' + oldToken);
+    if (customCycle) {
+      localStorage.setItem('budget_cycle_' + newToken, customCycle);
+      localStorage.removeItem('budget_cycle_' + oldToken);
+    }
+
     closeEditTokenModal();
     showToast('Berhasil', 'Token Anda berhasil diperbarui menjadi: ' + newToken, 'success');
 
@@ -1703,17 +1711,10 @@ async function renderRekapPage() {
   populateBudgetCategoryDatalist();
 
   const userCode = localStorage.getItem('user_code');
-
-  // Ambil data tanggal siklus dari Supabase
-  const { data: userData, error: userErr } = await supabaseClient
-    .from('users')
-    .select('cycle_date')
-    .eq('user_code', userCode)
-    .single();
-
+  const customStartDateStr = userCode ? localStorage.getItem('budget_cycle_' + userCode) : null;
   let cycleStartDate = null;
-  if (userData && userData.cycle_date) {
-    cycleStartDate = new Date(userData.cycle_date);
+  if (customStartDateStr) {
+    cycleStartDate = new Date(customStartDateStr);
   }
 
   const rekapFilter = document.getElementById('rekap-time-filter').value;
@@ -2030,23 +2031,14 @@ async function confirmResetData() {
   const userCode = localStorage.getItem('user_code');
   if (!userCode) return;
 
-  const todayStr = new Date().toISOString();
-
-  // Simpan ke Supabase, bukan lagi ke localStorage
-  const { error } = await supabaseClient
-    .from('users')
-    .update({ cycle_date: todayStr })
-    .eq('user_code', userCode);
-
-  if (error) {
-    showToast('Gagal', 'Gagal mereset siklus: ' + error.message, 'error');
-    return;
-  }
+  // Simpan timestamp presisi ISO
+  localStorage.setItem('budget_cycle_' + userCode, new Date().toISOString());
 
   closeResetDataModal();
-  showToast('Berhasil', 'Siklus Budget berhasil direset mulai hari ini!', 'success');
+  showToast('Berhasil', 'Siklus Budget berhasil direset! Total pengeluaran & pemasukan kembali ke Rp 0.', 'success');
 
-  // Refresh UI Rekap seketika
+  // Refresh UI Dashboard & Rekap seketika
+  updateBalance(allTransactions);
   if (currentPage === 'page-rekap') {
     renderRekapPage();
   }
@@ -2078,19 +2070,19 @@ async function importJSON(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = async function (e) {
+  reader.onload = async function(e) {
     try {
       const data = JSON.parse(e.target.result);
-      if (!data.user || !data.wallets) throw new Error("Format JSON tidak valid");
-
+      if(!data.user || !data.wallets) throw new Error("Format JSON tidak valid");
+      
       const userCode = data.user.user_code;
       localStorage.setItem('user_code', userCode);
-
+      
       // Upsert data
       await supabaseClient.from('users').upsert([data.user]);
-      if (data.wallets.length) await supabaseClient.from('wallets').upsert(data.wallets);
-      if (data.transactions.length) await supabaseClient.from('transactions').upsert(data.transactions);
-      if (data.budgets.length) await supabaseClient.from('budgets').upsert(data.budgets);
+      if(data.wallets.length) await supabaseClient.from('wallets').upsert(data.wallets);
+      if(data.transactions.length) await supabaseClient.from('transactions').upsert(data.transactions);
+      if(data.budgets.length) await supabaseClient.from('budgets').upsert(data.budgets);
 
       showToast("Berhasil", "Data berhasil dipulihkan!", "success");
       setTimeout(() => location.reload(), 1500);
