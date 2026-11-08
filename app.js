@@ -1741,21 +1741,7 @@ async function renderRekapPage() {
   allBudgets.forEach(b => totalBudget += Number(b.amount_limit));
   document.getElementById('rekap-total-budget').textContent = 'Rp ' + toRibuan(totalBudget);
 
-  // --- KUNCI: Untuk progress bar, gunakan akumulasi siklus berjalan ---
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  const cycleExpenses = allTransactions.filter(trx => {
-    if (trx.type !== 'expense') return false;
-    const trxTime = parseTrxTime(trx);
-    if (cycleStartDate) {
-      return trxTime >= cycleStartDate;
-    } else {
-      const parts = (trx.date || '').split('-').map(Number);
-      return parts[0] === currentYear && (parts[1] - 1) === currentMonth;
-    }
-  });
+  const cycleExpenses = filteredTrx.filter(trx => trx.type === 'expense');
 
   // Total pengeluaran siklus ini (untuk semua kategori)
   let totalCycleExpense = 0;
