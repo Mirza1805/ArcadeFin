@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ArcadeFin - Personal Finance Tracker</title>
     <meta name="description"
         content="ArcadeFin — Dashboard keuangan modern untuk mencatat pemasukan dan pengeluaran Anda secara real-time.">
@@ -11,9 +11,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
@@ -176,7 +178,7 @@
     <!-- ==================== DASHBOARD SCREEN ==================== -->
     <div id="dashboard-screen" class="dashboard-wrapper hidden">
 
-        <!-- Header -->
+        <!-- Global Dashboard Header -->
         <header class="dashboard-header animate-in">
             <div class="header-top">
                 <div class="header-brand">
@@ -198,78 +200,69 @@
             <p class="subtitle">Selamat datang, <strong id="user-display-name">-</strong></p>
         </header>
 
-        <!-- Balance Cards -->
-        <div class="balance-row animate-in">
-            <div class="balance-card">
-                <div class="balance-card-header">
-                    <div class="balance-label">Total Kekayaan</div>
-                    <button class="btn-eye" id="btn-eye-balance" onclick="toggleBalanceVisibility()"
-                        title="Sembunyikan / Tampilkan Saldo">
-                        <svg class="eye-icon eye-open" id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" width="18"
-                            height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        <svg class="eye-icon eye-closed hidden" id="eye-closed-icon" xmlns="http://www.w3.org/2000/svg"
-                            width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
-                            </path>
-                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                        </svg>
-                    </button>
+        <!-- ==================== PAGE 1: TRANSAKSI (Fokus Pencatatan & Saldo) ==================== -->
+        <section id="page-transaksi" class="spa-page spa-page-active">
+            <!-- Balance Cards -->
+            <div class="balance-row animate-in">
+                <div class="balance-card">
+                    <div class="balance-card-header">
+                        <div class="balance-label">Total Kekayaan</div>
+                        <button class="btn-eye" id="btn-eye-balance" onclick="toggleBalanceVisibility()"
+                            title="Sembunyikan / Tampilkan Saldo">
+                            <svg class="eye-icon eye-open" id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" width="18"
+                                height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="eye-icon eye-closed hidden" id="eye-closed-icon" xmlns="http://www.w3.org/2000/svg"
+                                width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                </path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="balance-amount" id="current-balance" data-value="Rp 0">Rp 0</div>
                 </div>
-                <div class="balance-amount" id="current-balance" data-value="Rp 0">Rp 0</div>
-
-            </div>
-            <div class="balance-card balance-sm">
-                <div class="balance-card-header">
-                    <div class="balance-label">Total Pemasukan</div>
+                <div class="balance-card balance-sm">
+                    <div class="balance-card-header">
+                        <div class="balance-label">Total Pemasukan</div>
+                    </div>
+                    <div class="balance-amount income-color" id="total-income" data-value="Rp 0">Rp 0</div>
                 </div>
-                <div class="balance-amount income-color" id="total-income" data-value="Rp 0">Rp 0</div>
-            </div>
-            <div class="balance-card balance-sm">
-                <div class="balance-card-header">
-                    <div class="balance-label">Total Pengeluaran</div>
-                </div>
-                <div class="balance-amount expense-color" id="total-expense" data-value="Rp 0">Rp 0</div>
-            </div>
-        </div>
-
-        <!-- Negative Balance Mascot -->
-        <div id="negative-mascot" class="negative-mascot hidden">
-            <div class="mascot-character">
-                <div class="mascot-emoji">😭</div>
-                <div class="mascot-speech-bubble">
-                    <span>Dompet menangis... Saldo negatif!</span>
+                <div class="balance-card balance-sm">
+                    <div class="balance-card-header">
+                        <div class="balance-label">Total Pengeluaran</div>
+                    </div>
+                    <div class="balance-amount expense-color" id="total-expense" data-value="Rp 0">Rp 0</div>
                 </div>
             </div>
-        </div>
 
-        <!-- WALLETS ROW -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; margin-top: 24px;">
-            <h3 style="font-size: 1rem; color: var(--text-primary); margin: 0;">Daftar Dompet</h3>
-            <button class="btn-eye" onclick="toggleWalletsVisibility()" title="Sembunyikan Dompet">👁️</button>
-        </div>
-        <div class="wallets-container animate-in" id="wallets-container">
-            <!-- Diisi JS -->
-        </div>
+            <!-- Negative Balance Mascot -->
+            <div id="negative-mascot" class="negative-mascot hidden">
+                <div class="mascot-character">
+                    <div class="mascot-emoji">😭</div>
+                    <div class="mascot-speech-bubble">
+                        <span>Dompet menangis... Saldo negatif!</span>
+                    </div>
+                </div>
+            </div>
 
-        <!-- ==================== SPA NAVIGATION TABS ==================== -->
-        <nav class="spa-nav animate-in" id="spa-nav">
-            <button class="spa-nav-tab active" data-page="page-dashboard" onclick="switchPage('page-dashboard')">
-                <span class="spa-nav-icon">📊</span> Dashboard Transaksi
-            </button>
-            <button class="spa-nav-tab" data-page="page-rekap" onclick="switchPage('page-rekap')">
-                <span class="spa-nav-icon">📋</span> Rekap & Budget
-            </button>
-            <div class="spa-nav-indicator" id="spa-nav-indicator"></div>
-        </nav>
+            <!-- WALLETS ROW -->
+            <div class="wallets-header-bar">
+                <div class="wallets-header-title">
+                    <span class="icon">💳</span>
+                    <h3>Daftar Dompet</h3>
+                </div>
+                <button class="btn-eye" onclick="toggleWalletsVisibility()" title="Sembunyikan / Tampilkan Nilai Dompet">👁️</button>
+            </div>
+            <div class="wallets-container animate-in" id="wallets-container">
+                <!-- Diisi JS -->
+            </div>
 
-        <!-- ==================== PAGE 1: DASHBOARD TRANSAKSI ==================== -->
-        <section id="page-dashboard" class="spa-page spa-page-active">
             <div class="dashboard-grid">
 
                 <!-- Left: Form Card -->
@@ -361,18 +354,6 @@
                         </div>
                     </div>
 
-                    <!-- Date Strip — Horizontal Scrollable Date Picker -->
-                    <div class="date-strip-container" id="date-strip-container">
-                        <div class="date-strip-header">
-                            <span class="date-strip-month" id="date-strip-month"></span>
-                            <button class="date-strip-clear" id="date-strip-clear" onclick="clearDateStripFilter()"
-                                style="display:none;">✕ Hapus Filter</button>
-                        </div>
-                        <div class="date-strip" id="date-strip">
-                            <!-- Rendered by JS -->
-                        </div>
-                    </div>
-
                     <div class="table-wrapper">
                         <table>
                             <thead>
@@ -393,18 +374,17 @@
 
                     <!-- Pagination Controls -->
                     <div class="pagination-controls" id="pagination-controls">
-                        <button class="btn-page" id="btn-prev" onclick="goToPrevPage()" disabled>
-                            < Prev</button>
-                                <span class="page-info" id="page-info">Halaman 1 / 1</span>
-                                <button class="btn-page" id="btn-next" onclick="goToNextPage()" disabled>Next ></button>
+                        <button class="btn-page" id="btn-prev" onclick="goToPrevPage()" disabled>&lt; Prev</button>
+                        <span class="page-info" id="page-info">Halaman 1 / 1</span>
+                        <button class="btn-page" id="btn-next" onclick="goToNextPage()" disabled>Next &gt;</button>
                     </div>
                 </section>
 
             </div>
         </section>
 
-        <!-- ==================== PAGE 2: REKAP & BUDGET ==================== -->
-        <section id="page-rekap" class="spa-page">
+        <!-- ==================== PAGE 2: BUDGET (Fokus Perencanaan) ==================== -->
+        <section id="page-budget" class="spa-page">
             <div class="glass-card animate-in">
                 <div class="rekap-header">
                     <h2 class="card-title"><span class="icon">📋</span> Rekapitulasi & Budget Bulanan</h2>
@@ -445,7 +425,7 @@
                     </div>
                 </div>
 
-                <!-- Budget Category Cards -->
+                <!-- Budget Category Cards (Progress Bar) -->
                 <div class="budget-cards-grid" id="budget-cards-grid">
                     <!-- Rendered by JS -->
                     <div class="empty-state">
@@ -455,6 +435,157 @@
                 </div>
             </div>
         </section>
+
+        <!-- ==================== PAGE 3: REVIEW (Fokus Analisis & Evaluasi) ==================== -->
+        <section id="page-review" class="spa-page">
+            
+            <!-- A. Kalender Grid Interaktif (Di bagian atas) -->
+            <div class="glass-card animate-in" style="margin-bottom: 24px;">
+                <div class="calendar-card-header">
+                    <div>
+                        <h2 class="card-title" style="margin-bottom: 4px; padding-bottom: 0; border: none;">
+                            <span class="icon">📅</span> Kalender Transaksi
+                        </h2>
+                        <p class="section-desc">Pantau konsistensi pencatatan harian Anda.</p>
+                    </div>
+                    <div class="calendar-controls">
+                        <button class="btn-cal-nav" onclick="changeReviewMonth(-1)" title="Bulan Sebelumnya" aria-label="Bulan Sebelumnya">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <span class="calendar-month-year" id="review-calendar-title">November 2026</span>
+                        <button class="btn-cal-nav" onclick="changeReviewMonth(1)" title="Bulan Selanjutnya" aria-label="Bulan Selanjutnya">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                        <button class="btn-cal-today" onclick="goToTodayReview()">Hari Ini</button>
+                    </div>
+                </div>
+
+                <!-- Active Date Filter Pill / Bar -->
+                <div class="calendar-filter-bar hidden" id="calendar-filter-bar">
+                    <div class="calendar-filter-content">
+                        <span class="calendar-filter-icon">🎯</span>
+                        <span class="calendar-filter-text" id="calendar-filter-text">Menampilkan: -</span>
+                    </div>
+                    <button class="btn-clear-date-filter" onclick="clearReviewDateFilter()" title="Batalkan filter tanggal">✕ Hapus Filter</button>
+                </div>
+
+                <!-- Calendar Weekdays Header (Senin - Minggu) -->
+                <div class="calendar-weekdays">
+                    <span class="weekday-cell">Sen</span>
+                    <span class="weekday-cell">Sel</span>
+                    <span class="weekday-cell">Rab</span>
+                    <span class="weekday-cell">Kam</span>
+                    <span class="weekday-cell">Jum</span>
+                    <span class="weekday-cell">Sab</span>
+                    <span class="weekday-cell weekday-sun">Min</span>
+                </div>
+
+                <!-- Calendar Grid (7 columns) -->
+                <div class="calendar-days-grid" id="review-calendar-grid">
+                    <!-- Diisi JS -->
+                </div>
+
+                <!-- Calendar Legend -->
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot dot-blue"></span>
+                        <span class="legend-text">Ada Transaksi (Biru)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot dot-gray"></span>
+                        <span class="legend-text">Terlewati Kosong (Abu-abu)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot dot-normal"></span>
+                        <span class="legend-text">Masa Depan (Normal)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- B. Rincian Pengeluaran per Kategori (Leaderboard) -->
+            <div class="glass-card animate-in-delay" style="margin-bottom: 24px;">
+                <div class="leaderboard-header">
+                    <div>
+                        <h2 class="card-title" style="margin-bottom: 4px; padding-bottom: 0; border: none;">
+                            <span class="icon">🏆</span> Leaderboard Pengeluaran per Kategori
+                        </h2>
+                        <p class="section-desc" id="review-leaderboard-subtitle">Mengurutkan total pengeluaran dari terbesar ke terkecil</p>
+                    </div>
+                    <div class="leaderboard-total-badge" id="review-leaderboard-total">
+                        Total: Rp 0
+                    </div>
+                </div>
+
+                <!-- Leaderboard List -->
+                <div class="leaderboard-list" id="review-leaderboard-list">
+                    <!-- Diisi JS -->
+                </div>
+            </div>
+
+            <!-- Mini Riwayat Transaksi Review -->
+            <div class="glass-card animate-in-delay">
+                <div class="rekap-header" style="margin-bottom: 16px;">
+                    <h2 class="card-title" style="margin-bottom: 0; padding-bottom: 0; border: none;">
+                        <span class="icon">📑</span> Riwayat Transaksi Periode Ini
+                    </h2>
+                    <span class="review-trx-count" id="review-trx-count">0 Transaksi</span>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Tipe</th>
+                                <th>Kategori</th>
+                                <th style="max-width: 150px;">Deskripsi</th>
+                                <th>Jumlah</th>
+                                <th style="text-align: right;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="review-transaction-list">
+                            <!-- Diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== 1. STRUKTUR NAVIGASI UTAMA (BOTTOM NAVBAR) ==================== -->
+        <nav class="bottom-navbar" id="bottom-navbar" aria-label="Navigasi Utama Aplikasi">
+            <button class="bottom-nav-item active" data-page="page-transaksi" onclick="switchPage('page-transaksi')" aria-label="Menu Transaksi">
+                <div class="nav-icon-wrapper">
+                    <svg class="nav-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                        <line x1="2" y1="10" x2="22" y2="10"></line>
+                    </svg>
+                </div>
+                <span class="nav-label">Transaksi</span>
+            </button>
+            <button class="bottom-nav-item" data-page="page-budget" onclick="switchPage('page-budget')" aria-label="Menu Budget">
+                <div class="nav-icon-wrapper">
+                    <svg class="nav-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                        <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                    </svg>
+                </div>
+                <span class="nav-label">Budget</span>
+            </button>
+            <button class="bottom-nav-item" data-page="page-review" onclick="switchPage('page-review')" aria-label="Menu Review">
+                <div class="nav-icon-wrapper">
+                    <svg class="nav-svg" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
+                <span class="nav-label">Review</span>
+            </button>
+        </nav>
 
     </div>
 
@@ -540,14 +671,61 @@
         </div>
     </div>
 
-    <!-- ==================== MODAL TAMBAH DOMPET ==================== -->
+    <!-- ==================== 3. MODAL TAMBAH DOMPET (DENGAN PRESET SYSTEM) ==================== -->
     <div id="wallet-modal" class="modal-overlay hidden">
-        <div class="modal-card">
+        <div class="modal-card modal-card-wallet">
             <h3 class="modal-title">💳 Tambah Dompet Baru</h3>
-            <p class="modal-text">Buat dompet baru untuk memisahkan dana Anda.</p>
+            <p class="modal-text">Pilih preset dompet populer atau buat nama dompet sendiri.</p>
+
+            <!-- Preset Pilihan Cepat Grid -->
+            <div class="presets-section">
+                <label class="presets-label">Preset Pilihan Cepat</label>
+                <div class="wallet-presets-grid" id="wallet-presets-grid">
+                    <button type="button" class="preset-btn" data-preset="bca" onclick="selectWalletPreset('bca', 'BCA')">
+                        <div class="preset-badge badge-bca">BCA</div>
+                        <span class="preset-name">BCA</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="mandiri" onclick="selectWalletPreset('mandiri', 'Mandiri')">
+                        <div class="preset-badge badge-mandiri">MDR</div>
+                        <span class="preset-name">Mandiri</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="bri" onclick="selectWalletPreset('bri', 'BRI')">
+                        <div class="preset-badge badge-bri">BRI</div>
+                        <span class="preset-name">BRI</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="bni" onclick="selectWalletPreset('bni', 'BNI')">
+                        <div class="preset-badge badge-bni">BNI</div>
+                        <span class="preset-name">BNI</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="gopay" onclick="selectWalletPreset('gopay', 'GoPay')">
+                        <div class="preset-badge badge-gopay">GP</div>
+                        <span class="preset-name">GoPay</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="ovo" onclick="selectWalletPreset('ovo', 'OVO')">
+                        <div class="preset-badge badge-ovo">OVO</div>
+                        <span class="preset-name">OVO</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="dana" onclick="selectWalletPreset('dana', 'DANA')">
+                        <div class="preset-badge badge-dana">DANA</div>
+                        <span class="preset-name">DANA</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="shopeepay" onclick="selectWalletPreset('shopeepay', 'ShopeePay')">
+                        <div class="preset-badge badge-shopeepay">SPay</div>
+                        <span class="preset-name">Shopee</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="cash" onclick="selectWalletPreset('cash', 'Tunai')">
+                        <div class="preset-badge badge-cash">💵</div>
+                        <span class="preset-name">Tunai</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Identifier Icon yang dipilih -->
+            <input type="hidden" id="wallet-icon-val" value="cash">
+
             <div class="form-group" style="text-align: left;">
                 <label for="wallet-name">Nama Dompet</label>
-                <input type="text" id="wallet-name" placeholder="Contoh: BCA / Gopay" maxlength="20">
+                <input type="text" id="wallet-name" placeholder="Contoh: BCA / GoPay / Tunai" maxlength="20">
             </div>
             <div class="form-group" style="text-align: left; margin-bottom: 20px;">
                 <label for="wallet-balance">Saldo Awal (Rp)</label>
@@ -604,7 +782,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
 </body>
 
 </html>

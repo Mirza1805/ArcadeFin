@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arcadefin-v2';
+const CACHE_NAME = 'arcadefin-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -36,14 +36,12 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Cache the new response for future use
         return caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, networkResponse.clone());
           return networkResponse;
         });
       })
       .catch(() => {
-        // Fallback to cache if network fails
         return caches.match(event.request);
       })
   );
