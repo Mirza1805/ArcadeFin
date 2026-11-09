@@ -1,11 +1,24 @@
-const CACHE_NAME = 'arcadefin-v4';
+const CACHE_NAME = 'arcadefin-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/style.css',
   '/app.js',
   '/aset/logo.png',
-  '/manifest.json'
+  '/manifest.json',
+  '/aset/logos/bca.png',
+  '/aset/logos/mandiri.png',
+  '/aset/logos/bri.png',
+  '/aset/logos/bni.png',
+  '/aset/logos/jago.png',
+  '/aset/logos/seabank.png',
+  '/aset/logos/blu.png',
+  '/aset/logos/tmrw.png',
+  '/aset/logos/gopay.png',
+  '/aset/logos/ovo.png',
+  '/aset/logos/dana.png',
+  '/aset/logos/shopeepay.png',
+  '/aset/logos/cash.png'
 ];
 
 self.addEventListener('install', (event) => {

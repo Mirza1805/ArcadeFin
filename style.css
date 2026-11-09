@@ -432,9 +432,12 @@ body {
    =================================================== */
 .dashboard-wrapper {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
-  padding: 28px 20px 105px 20px; /* Extra bottom padding for Bottom Navigation Bar */
+  padding: 28px 20px 90px 20px; /* 90px bottom clearance for Bottom Navigation Bar */
   position: relative;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .dashboard-header {
@@ -517,6 +520,10 @@ body {
    =================================================== */
 .spa-page {
   display: none;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
   animation: pageFadeIn 0.3s ease-out both;
 }
 
@@ -724,8 +731,8 @@ body {
 }
 
 .wallet-brand-badge {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -736,6 +743,24 @@ body {
   flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   letter-spacing: -0.3px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 3px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+[data-theme="light"] .wallet-brand-badge {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.wallet-brand-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  display: block;
 }
 
 .wallet-name {
@@ -785,6 +810,16 @@ body {
   grid-template-columns: 380px 1fr;
   gap: 24px;
   align-items: start;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.dashboard-grid > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .glass-card {
@@ -794,6 +829,11 @@ body {
   box-shadow: var(--shadow);
   padding: 24px 22px;
   transition: box-shadow var(--transition);
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .glass-card:hover {
@@ -825,6 +865,9 @@ body {
 /* ---------- Form Controls ---------- */
 .form-group {
   margin-bottom: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .form-group label {
@@ -840,6 +883,8 @@ body {
 .form-group input,
 .form-group select {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 11px 14px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -860,6 +905,9 @@ body {
 
 .select-wrapper {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .select-wrapper::after {
@@ -880,10 +928,16 @@ body {
   display: flex;
   gap: 10px;
   margin-top: 14px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .btn-submit {
   flex: 1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 12px 20px;
   border: none;
   border-radius: var(--radius-sm);
@@ -907,6 +961,9 @@ body {
 
 .btn-cancel {
   flex: 1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 12px 20px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -932,6 +989,14 @@ body {
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#rekap-filter-bar {
+  margin-top: 20px;
+  margin-bottom: 24px;
 }
 
 .filter-label {
@@ -1013,14 +1078,18 @@ body {
    TRANSACTION TABLE
    =================================================== */
 .table-wrapper {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 .table-wrapper table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  box-sizing: border-box;
 }
 
 .table-wrapper thead th {
@@ -1663,7 +1732,6 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 66px;
   background: var(--nav-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -1672,10 +1740,11 @@ body {
   justify-content: space-around;
   align-items: center;
   z-index: 999;
-  padding: 0 16px;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding: 8px 16px;
+  padding-bottom: env(safe-area-inset-bottom, 16px);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
   transition: background-color 0.3s, border-color 0.3s;
+  box-sizing: border-box;
 }
 
 /* Floating pill style on Desktop */
@@ -1709,27 +1778,34 @@ body {
   font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 6px 8px;
   border-radius: 12px;
   transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   -webkit-tap-highlight-color: transparent;
   min-height: 48px;
+  box-sizing: border-box;
 }
 
 .nav-icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 24px;
+  height: 24px;
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .nav-svg {
+  display: block;
   transition: stroke 0.25s ease;
 }
 
 .nav-label {
+  display: block;
+  line-height: 1.2;
   letter-spacing: 0.2px;
+  text-align: center;
   transition: color 0.25s ease;
 }
 
@@ -1763,31 +1839,45 @@ body {
 }
 
 /* ===================================================
-   3. PRESET SYSTEM UNTUK DOMPET
+   3. PRESET SYSTEM UNTUK DOMPET (CATEGORIZED WITH LOGOS)
    =================================================== */
 .modal-card-wallet {
-  max-width: 460px;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .presets-section {
   text-align: left;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
-.presets-label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+.preset-category-group {
+  margin-bottom: 14px;
+}
+
+.preset-category-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   margin-bottom: 8px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .wallet-presets-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+}
+
+.wallet-presets-grid.wallet-presets-grid-single {
+  grid-template-columns: 1fr;
 }
 
 .preset-btn {
@@ -1796,21 +1886,23 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 8px;
+  padding: 10px 4px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-input);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   color: var(--text-primary);
-  min-height: 64px;
+  min-height: 76px;
   -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .preset-btn:hover {
   border-color: var(--accent);
   background: rgba(99, 102, 241, 0.08);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .preset-btn.active {
@@ -1819,6 +1911,60 @@ body {
   box-shadow: 0 0 0 2px var(--accent);
 }
 
+.preset-logo-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+[data-theme="light"] .preset-logo-img {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.preset-btn:hover .preset-logo-img {
+  transform: scale(1.08);
+}
+
+.preset-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.preset-btn.active .preset-name {
+  color: var(--accent-hover);
+  font-weight: 700;
+}
+
+.wallet-presets-grid-single .preset-btn {
+  flex-direction: row;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 16px;
+}
+
+.wallet-presets-grid-single .preset-logo-img {
+  width: 32px;
+  height: 32px;
+}
+
+.wallet-presets-grid-single .preset-name {
+  font-size: 0.85rem;
+}
+
+/* Fallback badge styling */
 .preset-badge {
   width: 32px;
   height: 32px;
@@ -1833,18 +1979,7 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
-.preset-name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.preset-btn.active .preset-name {
-  color: var(--accent-hover);
-  font-weight: 700;
-}
-
-/* Specific Brand Colors */
+/* Specific Brand Colors (Fallback) */
 .badge-bca { background: #005E9E; }
 .badge-mandiri { background: #002F6C; color: #F5A623 !important; }
 .badge-bri { background: #00529C; }
@@ -1984,7 +2119,18 @@ body {
 
 @media (max-width: 768px) {
   .dashboard-wrapper {
-    padding: 16px 14px 96px 14px;
+    padding: 16px 16px 90px 16px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .spa-page {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   .balance-row {
@@ -2046,17 +2192,22 @@ body {
   }
 
   .wallet-presets-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 6px;
   }
 
   .preset-btn {
-    padding: 8px 4px;
-    min-height: 58px;
+    padding: 8px 3px;
+    min-height: 68px;
+  }
+
+  .preset-logo-img {
+    width: 36px;
+    height: 36px;
   }
 
   .preset-name {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
   }
 
   .toast-container {
@@ -2085,13 +2236,22 @@ body {
     justify-content: flex-start;
   }
 
+  .table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .table-wrapper table {
-    min-width: 520px;
+    min-width: 500px;
   }
 
   .glass-card {
     padding: 18px 14px;
     border-radius: 12px;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   .card-title {
@@ -2108,11 +2268,12 @@ body {
   }
 
   .bottom-navbar {
-    height: 60px;
+    padding: 6px 10px;
+    padding-bottom: env(safe-area-inset-bottom, 16px);
   }
 
   .bottom-nav-item {
-    padding: 4px 8px;
+    padding: 4px 6px;
     font-size: 0.68rem;
   }
 

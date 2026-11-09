@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f1117">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -271,9 +271,9 @@
 
                     <div class="form-group">
                         <label for="amount">Jumlah (Rp)</label>
-                        <div style="position: relative; display: flex; align-items: center;">
+                        <div style="position: relative; display: flex; align-items: center; width: 100%; max-width: 100%;">
                             <input type="text" id="amount" placeholder="Contoh: 50.000" oninput="formatRibuan(this)"
-                                style="flex: 1; padding-right: 60px;">
+                                style="width: 100%; flex: 1; min-width: 0; padding-right: 60px;">
                             <button type="button" class="btn-max" onclick="fillMaxAmount()"
                                 style="position: absolute; right: 8px; padding: 6px 12px; font-size: 0.75rem; border-radius: 4px; background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; transition: opacity 0.2s; min-height: 32px; min-width: 44px;"
                                 onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">MAX</button>
@@ -354,7 +354,7 @@
                         </div>
                     </div>
 
-                    <div class="table-wrapper">
+                    <div class="table-wrapper" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
                         <table>
                             <thead>
                                 <tr>
@@ -397,7 +397,7 @@
                 </div>
 
                 <!-- Rekap Time Filter -->
-                <div class="filter-bar" id="rekap-filter-bar">
+                <div class="filter-bar" id="rekap-filter-bar" style="margin-top: 20px; margin-bottom: 24px;">
                     <label for="rekap-time-filter" class="filter-label">Filter Waktu Rekap:</label>
                     <div class="select-wrapper filter-select-wrapper">
                         <select id="rekap-time-filter" onchange="applyRekapFilter()">
@@ -530,7 +530,7 @@
                     </h2>
                     <span class="review-trx-count" id="review-trx-count">0 Transaksi</span>
                 </div>
-                <div class="table-wrapper">
+                <div class="table-wrapper" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
                     <table>
                         <thead>
                             <tr>
@@ -671,52 +671,92 @@
         </div>
     </div>
 
-    <!-- ==================== 3. MODAL TAMBAH DOMPET (DENGAN PRESET SYSTEM) ==================== -->
+    <!-- ==================== 3. MODAL TAMBAH DOMPET (REVAMP: CATEGORIZED GRID WITH OFFICIAL LOGOS) ==================== -->
     <div id="wallet-modal" class="modal-overlay hidden">
         <div class="modal-card modal-card-wallet">
             <h3 class="modal-title">💳 Tambah Dompet Baru</h3>
-            <p class="modal-text">Pilih preset dompet populer atau buat nama dompet sendiri.</p>
+            <p class="modal-text">Pilih logo resmi atau sesuaikan nama dompet Anda sendiri.</p>
 
-            <!-- Preset Pilihan Cepat Grid -->
+            <!-- Categorized Presets Section -->
             <div class="presets-section">
-                <label class="presets-label">Preset Pilihan Cepat</label>
-                <div class="wallet-presets-grid" id="wallet-presets-grid">
-                    <button type="button" class="preset-btn" data-preset="bca" onclick="selectWalletPreset('bca', 'BCA')">
-                        <div class="preset-badge badge-bca">BCA</div>
-                        <span class="preset-name">BCA</span>
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="mandiri" onclick="selectWalletPreset('mandiri', 'Mandiri')">
-                        <div class="preset-badge badge-mandiri">MDR</div>
-                        <span class="preset-name">Mandiri</span>
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="bri" onclick="selectWalletPreset('bri', 'BRI')">
-                        <div class="preset-badge badge-bri">BRI</div>
-                        <span class="preset-name">BRI</span>
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="bni" onclick="selectWalletPreset('bni', 'BNI')">
-                        <div class="preset-badge badge-bni">BNI</div>
-                        <span class="preset-name">BNI</span>
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="gopay" onclick="selectWalletPreset('gopay', 'GoPay')">
-                        <div class="preset-badge badge-gopay">GP</div>
-                        <span class="preset-name">GoPay</span>
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="ovo" onclick="selectWalletPreset('ovo', 'OVO')">
-                        <div class="preset-badge badge-ovo">OVO</div>
-                        <span class="preset-name">OVO</span>
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="dana" onclick="selectWalletPreset('dana', 'DANA')">
-                        <div class="preset-badge badge-dana">DANA</div>
-                        <span class="preset-name">DANA</span>
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="shopeepay" onclick="selectWalletPreset('shopeepay', 'ShopeePay')">
-                        <div class="preset-badge badge-shopeepay">SPay</div>
-                        <span class="preset-name">Shopee</span>
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="cash" onclick="selectWalletPreset('cash', 'Tunai')">
-                        <div class="preset-badge badge-cash">💵</div>
-                        <span class="preset-name">Tunai</span>
-                    </button>
+                <!-- A. Bank Konvensional -->
+                <div class="preset-category-group">
+                    <div class="preset-category-title">🏦 Bank Konvensional</div>
+                    <div class="wallet-presets-grid">
+                        <button type="button" class="preset-btn" data-preset="bca" onclick="selectWalletPreset('bca', 'BCA')">
+                            <img src="aset/logos/bca.png" alt="BCA" class="preset-logo-img">
+                            <span class="preset-name">BCA</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="mandiri" onclick="selectWalletPreset('mandiri', 'Mandiri')">
+                            <img src="aset/logos/mandiri.png" alt="Mandiri" class="preset-logo-img">
+                            <span class="preset-name">Mandiri</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="bri" onclick="selectWalletPreset('bri', 'BRI')">
+                            <img src="aset/logos/bri.png" alt="BRI" class="preset-logo-img">
+                            <span class="preset-name">BRI</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="bni" onclick="selectWalletPreset('bni', 'BNI')">
+                            <img src="aset/logos/bni.png" alt="BNI" class="preset-logo-img">
+                            <span class="preset-name">BNI</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- B. Bank Digital -->
+                <div class="preset-category-group">
+                    <div class="preset-category-title">🚀 Bank Digital</div>
+                    <div class="wallet-presets-grid">
+                        <button type="button" class="preset-btn" data-preset="jago" onclick="selectWalletPreset('jago', 'Bank Jago')">
+                            <img src="aset/logos/jago.png" alt="Bank Jago" class="preset-logo-img">
+                            <span class="preset-name">Jago</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="seabank" onclick="selectWalletPreset('seabank', 'SeaBank')">
+                            <img src="aset/logos/seabank.png" alt="SeaBank" class="preset-logo-img">
+                            <span class="preset-name">SeaBank</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="blu" onclick="selectWalletPreset('blu', 'Blu by BCA')">
+                            <img src="aset/logos/blu.png" alt="Blu" class="preset-logo-img">
+                            <span class="preset-name">Blu</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="tmrw" onclick="selectWalletPreset('tmrw', 'TMRW')">
+                            <img src="aset/logos/tmrw.png" alt="TMRW" class="preset-logo-img">
+                            <span class="preset-name">TMRW</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- C. E-Wallet -->
+                <div class="preset-category-group">
+                    <div class="preset-category-title">📱 E-Wallet</div>
+                    <div class="wallet-presets-grid">
+                        <button type="button" class="preset-btn" data-preset="gopay" onclick="selectWalletPreset('gopay', 'GoPay')">
+                            <img src="aset/logos/gopay.png" alt="GoPay" class="preset-logo-img">
+                            <span class="preset-name">GoPay</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="ovo" onclick="selectWalletPreset('ovo', 'OVO')">
+                            <img src="aset/logos/ovo.png" alt="OVO" class="preset-logo-img">
+                            <span class="preset-name">OVO</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="dana" onclick="selectWalletPreset('dana', 'DANA')">
+                            <img src="aset/logos/dana.png" alt="DANA" class="preset-logo-img">
+                            <span class="preset-name">DANA</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="shopeepay" onclick="selectWalletPreset('shopeepay', 'ShopeePay')">
+                            <img src="aset/logos/shopeepay.png" alt="ShopeePay" class="preset-logo-img">
+                            <span class="preset-name">Shopee</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- D. Lainnya -->
+                <div class="preset-category-group">
+                    <div class="preset-category-title">💵 Lainnya</div>
+                    <div class="wallet-presets-grid wallet-presets-grid-single">
+                        <button type="button" class="preset-btn active" data-preset="cash" onclick="selectWalletPreset('cash', 'Tunai')">
+                            <img src="aset/logos/cash.png" alt="Tunai" class="preset-logo-img">
+                            <span class="preset-name">Tunai / Cash</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -782,7 +822,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 
 </html>

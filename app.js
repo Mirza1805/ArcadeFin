@@ -485,47 +485,53 @@ function toggleWalletsVisibility() {
 let allWallets = [];
 let selectedWalletPreset = 'cash';
 
+// Master registry of official wallet logos
+const WALLET_LOGOS = {
+  bca: { src: 'aset/logos/bca.png', name: 'BCA' },
+  mandiri: { src: 'aset/logos/mandiri.png', name: 'Mandiri' },
+  bri: { src: 'aset/logos/bri.png', name: 'BRI' },
+  bni: { src: 'aset/logos/bni.png', name: 'BNI' },
+  jago: { src: 'aset/logos/jago.png', name: 'Bank Jago' },
+  seabank: { src: 'aset/logos/seabank.png', name: 'SeaBank' },
+  blu: { src: 'aset/logos/blu.png', name: 'Blu by BCA' },
+  tmrw: { src: 'aset/logos/tmrw.png', name: 'TMRW' },
+  gopay: { src: 'aset/logos/gopay.png', name: 'GoPay' },
+  ovo: { src: 'aset/logos/ovo.png', name: 'OVO' },
+  dana: { src: 'aset/logos/dana.png', name: 'DANA' },
+  shopeepay: { src: 'aset/logos/shopeepay.png', name: 'ShopeePay' },
+  cash: { src: 'aset/logos/cash.png', name: 'Tunai / Cash' }
+};
+
 // Auto-detect wallet icon identifier from name
 function detectWalletIcon(name) {
   if (!name) return 'cash';
   const n = name.toLowerCase();
-  if (n.includes('bca')) return 'bca';
-  if (n.includes('mandiri')) return 'mandiri';
-  if (n.includes('bri')) return 'bri';
+  if (n.includes('bca') || n.includes('central asia')) return 'bca';
+  if (n.includes('mandiri') || n.includes('livin')) return 'mandiri';
+  if (n.includes('bri') || n.includes('brimo')) return 'bri';
   if (n.includes('bni')) return 'bni';
+  if (n.includes('jago')) return 'jago';
+  if (n.includes('seabank') || n.includes('sea bank')) return 'seabank';
+  if (n.includes('blu')) return 'blu';
+  if (n.includes('tmrw') || n.includes('tomorrow')) return 'tmrw';
   if (n.includes('gopay') || n.includes('go-pay') || n.includes('gojek')) return 'gopay';
   if (n.includes('ovo')) return 'ovo';
   if (n.includes('dana')) return 'dana';
   if (n.includes('shopee') || n.includes('spay')) return 'shopeepay';
-  if (n.includes('cash') || n.includes('tunai') || n.includes('dompet')) return 'cash';
+  if (n.includes('cash') || n.includes('tunai') || n.includes('dompet') || n.includes('uang')) return 'cash';
   return 'default';
 }
 
-// Generate brand badge HTML for card display
+// Generate brand badge HTML with official logo image for card display
 function getWalletBadgeHTML(iconKey, name) {
-  const icon = iconKey || detectWalletIcon(name);
-  switch (icon) {
-    case 'bca':
-      return `<div class="wallet-brand-badge badge-bca" title="BCA">BCA</div>`;
-    case 'mandiri':
-      return `<div class="wallet-brand-badge badge-mandiri" title="Bank Mandiri">MDR</div>`;
-    case 'bri':
-      return `<div class="wallet-brand-badge badge-bri" title="BRI">BRI</div>`;
-    case 'bni':
-      return `<div class="wallet-brand-badge badge-bni" title="BNI">BNI</div>`;
-    case 'gopay':
-      return `<div class="wallet-brand-badge badge-gopay" title="GoPay">GP</div>`;
-    case 'ovo':
-      return `<div class="wallet-brand-badge badge-ovo" title="OVO">OVO</div>`;
-    case 'dana':
-      return `<div class="wallet-brand-badge badge-dana" title="DANA">DANA</div>`;
-    case 'shopeepay':
-      return `<div class="wallet-brand-badge badge-shopeepay" title="ShopeePay">SPay</div>`;
-    case 'cash':
-      return `<div class="wallet-brand-badge badge-cash" title="Tunai / Cash">💵</div>`;
-    default:
-      return `<div class="wallet-brand-badge badge-default" title="Dompet">💳</div>`;
+  const icon = (iconKey || detectWalletIcon(name) || 'cash').toLowerCase();
+  const info = WALLET_LOGOS[icon];
+  if (info) {
+    return `<div class="wallet-brand-badge" title="${info.name}">
+      <img src="${info.src}" alt="${info.name}" style="width: 100%; height: 100%; object-fit: contain;">
+    </div>`;
   }
+  return `<div class="wallet-brand-badge badge-default" title="Dompet">💳</div>`;
 }
 
 // Preset selection inside Tambah Dompet modal
@@ -536,7 +542,7 @@ function selectWalletPreset(presetKey, presetName) {
   if (inputName) inputName.value = presetName;
   if (inputIcon) inputIcon.value = presetKey;
 
-  const allPresets = document.querySelectorAll('#wallet-presets-grid .preset-btn');
+  const allPresets = document.querySelectorAll('.wallet-presets-grid .preset-btn');
   allPresets.forEach(btn => {
     if (btn.getAttribute('data-preset') === presetKey) {
       btn.classList.add('active');
@@ -620,7 +626,7 @@ function showWalletModal() {
   document.getElementById('wallet-icon-val').value = 'cash';
   selectedWalletPreset = 'cash';
 
-  const allPresets = document.querySelectorAll('#wallet-presets-grid .preset-btn');
+  const allPresets = document.querySelectorAll('.wallet-presets-grid .preset-btn');
   allPresets.forEach(btn => {
     if (btn.getAttribute('data-preset') === 'cash') {
       btn.classList.add('active');
