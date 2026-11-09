@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f1117">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -671,7 +671,7 @@
         </div>
     </div>
 
-    <!-- ==================== 3. MODAL TAMBAH DOMPET (REVAMP: CATEGORIZED GRID WITH OFFICIAL LOGOS) ==================== -->
+    <!-- ==================== 3. MODAL TAMBAH DOMPET (EXPANDED 4 CATEGORIES WITH 26 OFFICIAL LOGOS) ==================== -->
     <div id="wallet-modal" class="modal-overlay hidden">
         <div class="modal-card modal-card-wallet">
             <h3 class="modal-title">💳 Tambah Dompet Baru</h3>
@@ -679,7 +679,7 @@
 
             <!-- Categorized Presets Section -->
             <div class="presets-section">
-                <!-- A. Bank Konvensional -->
+                <!-- 1. Bank Konvensional -->
                 <div class="preset-category-group">
                     <div class="preset-category-title">🏦 Bank Konvensional</div>
                     <div class="wallet-presets-grid">
@@ -699,10 +699,53 @@
                             <img src="aset/logos/bni.png" alt="BNI" class="preset-logo-img">
                             <span class="preset-name">BNI</span>
                         </button>
+                        <button type="button" class="preset-btn" data-preset="cimb" onclick="selectWalletPreset('cimb', 'CIMB Niaga')">
+                            <img src="aset/logos/cimb.png" alt="CIMB Niaga" class="preset-logo-img">
+                            <span class="preset-name">CIMB</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="permata" onclick="selectWalletPreset('permata', 'Permata')">
+                            <img src="aset/logos/permata.png" alt="Permata" class="preset-logo-img">
+                            <span class="preset-name">Permata</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="danamon" onclick="selectWalletPreset('danamon', 'Danamon')">
+                            <img src="aset/logos/danamon.png" alt="Danamon" class="preset-logo-img">
+                            <span class="preset-name">Danamon</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="btn" onclick="selectWalletPreset('btn', 'BTN')">
+                            <img src="aset/logos/btn.png" alt="BTN" class="preset-logo-img">
+                            <span class="preset-name">BTN</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- B. Bank Digital -->
+                <!-- 2. Bank Daerah (BPD) -->
+                <div class="preset-category-group">
+                    <div class="preset-category-title">🏛️ Bank Daerah (BPD)</div>
+                    <div class="wallet-presets-grid">
+                        <button type="button" class="preset-btn" data-preset="bankjateng" onclick="selectWalletPreset('bankjateng', 'Bank Jateng')">
+                            <img src="aset/logos/bankjateng.png" alt="Bank Jateng" class="preset-logo-img">
+                            <span class="preset-name">Jateng</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="bankjatim" onclick="selectWalletPreset('bankjatim', 'Bank Jatim')">
+                            <img src="aset/logos/bankjatim.png" alt="Bank Jatim" class="preset-logo-img">
+                            <span class="preset-name">Jatim</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="bjb" onclick="selectWalletPreset('bjb', 'Bank BJB')">
+                            <img src="aset/logos/bjb.png" alt="Bank BJB" class="preset-logo-img">
+                            <span class="preset-name">BJB</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="bankdki" onclick="selectWalletPreset('bankdki', 'Bank DKI')">
+                            <img src="aset/logos/bankdki.png" alt="Bank DKI" class="preset-logo-img">
+                            <span class="preset-name">DKI</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="banksumut" onclick="selectWalletPreset('banksumut', 'Bank Sumut')">
+                            <img src="aset/logos/banksumut.png" alt="Bank Sumut" class="preset-logo-img">
+                            <span class="preset-name">Sumut</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Bank Digital -->
                 <div class="preset-category-group">
                     <div class="preset-category-title">🚀 Bank Digital</div>
                     <div class="wallet-presets-grid">
@@ -718,16 +761,28 @@
                             <img src="aset/logos/blu.png" alt="Blu" class="preset-logo-img">
                             <span class="preset-name">Blu</span>
                         </button>
-                        <button type="button" class="preset-btn" data-preset="tmrw" onclick="selectWalletPreset('tmrw', 'TMRW')">
-                            <img src="aset/logos/tmrw.png" alt="TMRW" class="preset-logo-img">
-                            <span class="preset-name">TMRW</span>
+                        <button type="button" class="preset-btn" data-preset="neobank" onclick="selectWalletPreset('neobank', 'Neobank')">
+                            <img src="aset/logos/neobank.png" alt="Neobank" class="preset-logo-img">
+                            <span class="preset-name">Neo</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="allobank" onclick="selectWalletPreset('allobank', 'Allo Bank')">
+                            <img src="aset/logos/allobank.png" alt="Allo Bank" class="preset-logo-img">
+                            <span class="preset-name">Allo</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="superbank" onclick="selectWalletPreset('superbank', 'Superbank')">
+                            <img src="aset/logos/superbank.png" alt="Superbank" class="preset-logo-img">
+                            <span class="preset-name">Super</span>
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="jenius" onclick="selectWalletPreset('jenius', 'Jenius')">
+                            <img src="aset/logos/jenius.png" alt="Jenius" class="preset-logo-img">
+                            <span class="preset-name">Jenius</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- C. E-Wallet -->
+                <!-- 4. E-Wallet & Cash -->
                 <div class="preset-category-group">
-                    <div class="preset-category-title">📱 E-Wallet</div>
+                    <div class="preset-category-title">📱 E-Wallet & Cash</div>
                     <div class="wallet-presets-grid">
                         <button type="button" class="preset-btn" data-preset="gopay" onclick="selectWalletPreset('gopay', 'GoPay')">
                             <img src="aset/logos/gopay.png" alt="GoPay" class="preset-logo-img">
@@ -745,16 +800,13 @@
                             <img src="aset/logos/shopeepay.png" alt="ShopeePay" class="preset-logo-img">
                             <span class="preset-name">Shopee</span>
                         </button>
-                    </div>
-                </div>
-
-                <!-- D. Lainnya -->
-                <div class="preset-category-group">
-                    <div class="preset-category-title">💵 Lainnya</div>
-                    <div class="wallet-presets-grid wallet-presets-grid-single">
+                        <button type="button" class="preset-btn" data-preset="linkaja" onclick="selectWalletPreset('linkaja', 'LinkAja')">
+                            <img src="aset/logos/linkaja.png" alt="LinkAja" class="preset-logo-img">
+                            <span class="preset-name">LinkAja</span>
+                        </button>
                         <button type="button" class="preset-btn active" data-preset="cash" onclick="selectWalletPreset('cash', 'Tunai')">
                             <img src="aset/logos/cash.png" alt="Tunai" class="preset-logo-img">
-                            <span class="preset-name">Tunai / Cash</span>
+                            <span class="preset-name">Tunai</span>
                         </button>
                     </div>
                 </div>
@@ -822,7 +874,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 
 </html>

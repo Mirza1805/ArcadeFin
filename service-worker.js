@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arcadefin-v5';
+const CACHE_NAME = 'arcadefin-v6';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -10,14 +10,27 @@ const ASSETS_TO_CACHE = [
   '/aset/logos/mandiri.png',
   '/aset/logos/bri.png',
   '/aset/logos/bni.png',
+  '/aset/logos/cimb.png',
+  '/aset/logos/permata.png',
+  '/aset/logos/danamon.png',
+  '/aset/logos/btn.png',
+  '/aset/logos/bankjateng.png',
+  '/aset/logos/bankjatim.png',
+  '/aset/logos/bjb.png',
+  '/aset/logos/bankdki.png',
+  '/aset/logos/banksumut.png',
   '/aset/logos/jago.png',
   '/aset/logos/seabank.png',
   '/aset/logos/blu.png',
-  '/aset/logos/tmrw.png',
+  '/aset/logos/neobank.png',
+  '/aset/logos/allobank.png',
+  '/aset/logos/superbank.png',
+  '/aset/logos/jenius.png',
   '/aset/logos/gopay.png',
   '/aset/logos/ovo.png',
   '/aset/logos/dana.png',
   '/aset/logos/shopeepay.png',
+  '/aset/logos/linkaja.png',
   '/aset/logos/cash.png'
 ];
 

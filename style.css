@@ -12,7 +12,7 @@
   --bg-card-hover: #1e2130;
   --bg-input: #12141c;
   --bg-table-header: #14161f;
-  --border-color: #2a2d3a;
+  --border-color: rgba(255, 255, 255, 0.08);
   --border-focus: #6366f1;
   --text-primary: #e8eaed;
   --text-secondary: #9ca3b0;
@@ -45,19 +45,19 @@
   --cal-gray-border: rgba(255, 255, 255, 0.08);
   --cal-gray-text: #525866;
   
-  --radius: 14px;
-  --radius-sm: 8px;
+  --radius: 16px;
+  --radius-sm: 10px;
   --radius-pill: 9999px;
-  --shadow: 0 2px 4px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.18);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-  --transition: 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   
   --bg-auth-card: rgba(26, 29, 39, 0.88);
   --border-auth-card: rgba(42, 45, 58, 0.7);
   --primary: #6366f1;
 
   --nav-bg: rgba(18, 20, 28, 0.94);
-  --nav-border: #2a2d3a;
+  --nav-border: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="light"] {
@@ -66,12 +66,12 @@
   --bg-card-hover: #f9fafb;
   --bg-input: #f9fafb;
   --bg-table-header: #f3f4f6;
-  --border-color: #e5e7eb;
+  --border-color: rgba(0, 0, 0, 0.06);
   --border-focus: #6366f1;
   --text-primary: #1f2937;
   --text-secondary: #4b5563;
   --text-muted: #6b7280;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
   
   --income-bg: rgba(16, 185, 129, 0.12);
@@ -94,7 +94,7 @@
   --border-auth-card: rgba(229, 231, 235, 0.9);
   
   --nav-bg: rgba(255, 255, 255, 0.94);
-  --nav-border: #e5e7eb;
+  --nav-border: rgba(0, 0, 0, 0.06);
 }
 
 /* ---------- Reset & Base ---------- */
@@ -114,7 +114,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
   min-height: 100vh;
   background-color: var(--bg-body);
   color: var(--text-primary);
@@ -126,8 +126,47 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.glass-card, .balance-card, .auth-card, input, select {
-  transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s !important;
+/* Modern Banking Micro-Interactions */
+button,
+input,
+select,
+.glass-card,
+.balance-card,
+.wallet-item,
+.rekap-summary-card,
+.budget-card,
+.modal-card,
+.leaderboard-item,
+.preset-btn,
+.bottom-nav-item,
+.btn-submit,
+.btn-action,
+.btn-cancel,
+.btn-page,
+.cal-day-cell,
+.btn-cal-nav,
+.btn-cal-today,
+.btn-eye {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:active,
+.balance-card:active,
+.wallet-item:active,
+.budget-card:active,
+.rekap-summary-card:active,
+.leaderboard-item:active,
+.btn-submit:active,
+.btn-action:active,
+.btn-cancel:active,
+.btn-page:active,
+.preset-btn:active,
+.bottom-nav-item:active,
+.cal-day-cell:active,
+.btn-cal-nav:active,
+.btn-cal-today:active,
+.btn-eye:active {
+  transform: scale(0.98);
 }
 
 /* ---------- Utility ---------- */
@@ -434,7 +473,7 @@ body {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 28px 20px 90px 20px; /* 90px bottom clearance for Bottom Navigation Bar */
+  padding: 24px 16px 100px 16px; /* 100px bottom clearance for Bottom Navigation Bar */
   position: relative;
   overflow-x: hidden;
   box-sizing: border-box;
@@ -731,9 +770,11 @@ body {
 }
 
 .wallet-brand-badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -741,7 +782,7 @@ body {
   font-weight: 800;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   letter-spacing: -0.3px;
   background: rgba(255, 255, 255, 0.06);
   padding: 3px;
@@ -752,14 +793,15 @@ body {
 
 [data-theme="light"] .wallet-brand-badge {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .wallet-brand-badge img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 4px;
+  border-radius: 6px;
   display: block;
 }
 
@@ -1741,7 +1783,7 @@ body {
   align-items: center;
   z-index: 999;
   padding: 8px 16px;
-  padding-bottom: env(safe-area-inset-bottom, 16px);
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
   transition: background-color 0.3s, border-color 0.3s;
   box-sizing: border-box;
@@ -2119,7 +2161,7 @@ body {
 
 @media (max-width: 768px) {
   .dashboard-wrapper {
-    padding: 16px 16px 90px 16px;
+    padding: 16px 16px 100px 16px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -2269,7 +2311,7 @@ body {
 
   .bottom-navbar {
     padding: 6px 10px;
-    padding-bottom: env(safe-area-inset-bottom, 16px);
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 
   .bottom-nav-item {

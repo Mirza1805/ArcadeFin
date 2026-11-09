@@ -485,20 +485,40 @@ function toggleWalletsVisibility() {
 let allWallets = [];
 let selectedWalletPreset = 'cash';
 
-// Master registry of official wallet logos
+// Master registry of official wallet logos (26 Financial Institutions & Cash)
 const WALLET_LOGOS = {
+  // Major Conventional Banks
   bca: { src: 'aset/logos/bca.png', name: 'BCA' },
-  mandiri: { src: 'aset/logos/mandiri.png', name: 'Mandiri' },
+  mandiri: { src: 'aset/logos/mandiri.png', name: 'Bank Mandiri' },
   bri: { src: 'aset/logos/bri.png', name: 'BRI' },
   bni: { src: 'aset/logos/bni.png', name: 'BNI' },
+  cimb: { src: 'aset/logos/cimb.png', name: 'CIMB Niaga' },
+  permata: { src: 'aset/logos/permata.png', name: 'Permata Bank' },
+  danamon: { src: 'aset/logos/danamon.png', name: 'Bank Danamon' },
+  btn: { src: 'aset/logos/btn.png', name: 'Bank BTN' },
+
+  // Regional Banks (BPD)
+  bankjateng: { src: 'aset/logos/bankjateng.png', name: 'Bank Jateng' },
+  bankjatim: { src: 'aset/logos/bankjatim.png', name: 'Bank Jatim' },
+  bjb: { src: 'aset/logos/bjb.png', name: 'Bank BJB' },
+  bankdki: { src: 'aset/logos/bankdki.png', name: 'Bank DKI' },
+  banksumut: { src: 'aset/logos/banksumut.png', name: 'Bank Sumut' },
+
+  // Digital Banks
   jago: { src: 'aset/logos/jago.png', name: 'Bank Jago' },
   seabank: { src: 'aset/logos/seabank.png', name: 'SeaBank' },
   blu: { src: 'aset/logos/blu.png', name: 'Blu by BCA' },
-  tmrw: { src: 'aset/logos/tmrw.png', name: 'TMRW' },
+  neobank: { src: 'aset/logos/neobank.png', name: 'Neobank / BNC' },
+  allobank: { src: 'aset/logos/allobank.png', name: 'Allo Bank' },
+  superbank: { src: 'aset/logos/superbank.png', name: 'Superbank' },
+  jenius: { src: 'aset/logos/jenius.png', name: 'Jenius' },
+
+  // E-Wallets & Others
   gopay: { src: 'aset/logos/gopay.png', name: 'GoPay' },
   ovo: { src: 'aset/logos/ovo.png', name: 'OVO' },
   dana: { src: 'aset/logos/dana.png', name: 'DANA' },
   shopeepay: { src: 'aset/logos/shopeepay.png', name: 'ShopeePay' },
+  linkaja: { src: 'aset/logos/linkaja.png', name: 'LinkAja' },
   cash: { src: 'aset/logos/cash.png', name: 'Tunai / Cash' }
 };
 
@@ -506,32 +526,54 @@ const WALLET_LOGOS = {
 function detectWalletIcon(name) {
   if (!name) return 'cash';
   const n = name.toLowerCase();
+
+  // Conventional
   if (n.includes('bca') || n.includes('central asia')) return 'bca';
   if (n.includes('mandiri') || n.includes('livin')) return 'mandiri';
   if (n.includes('bri') || n.includes('brimo')) return 'bri';
   if (n.includes('bni')) return 'bni';
+  if (n.includes('cimb') || n.includes('niaga') || n.includes('octo')) return 'cimb';
+  if (n.includes('permata')) return 'permata';
+  if (n.includes('danamon')) return 'danamon';
+  if (n.includes('btn')) return 'btn';
+
+  // Regional (BPD)
+  if (n.includes('jateng')) return 'bankjateng';
+  if (n.includes('jatim')) return 'bankjatim';
+  if (n.includes('bjb') || n.includes('jabar')) return 'bjb';
+  if (n.includes('dki') || n.includes('jakone')) return 'bankdki';
+  if (n.includes('sumut')) return 'banksumut';
+
+  // Digital
   if (n.includes('jago')) return 'jago';
   if (n.includes('seabank') || n.includes('sea bank')) return 'seabank';
   if (n.includes('blu')) return 'blu';
-  if (n.includes('tmrw') || n.includes('tomorrow')) return 'tmrw';
+  if (n.includes('neo') || n.includes('bnc')) return 'neobank';
+  if (n.includes('allo')) return 'allobank';
+  if (n.includes('superbank') || n.includes('fama')) return 'superbank';
+  if (n.includes('jenius') || n.includes('btpn')) return 'jenius';
+
+  // E-Wallet & Cash
   if (n.includes('gopay') || n.includes('go-pay') || n.includes('gojek')) return 'gopay';
   if (n.includes('ovo')) return 'ovo';
   if (n.includes('dana')) return 'dana';
   if (n.includes('shopee') || n.includes('spay')) return 'shopeepay';
-  if (n.includes('cash') || n.includes('tunai') || n.includes('dompet') || n.includes('uang')) return 'cash';
+  if (n.includes('linkaja') || n.includes('link aja') || n.includes('tcash')) return 'linkaja';
+  if (n.includes('cash') || n.includes('tunai') || n.includes('dompet') || n.includes('uang') || n.includes('fisik')) return 'cash';
+
   return 'default';
 }
 
-// Generate brand badge HTML with official logo image for card display
+// Generate brand badge HTML with official logo image inside standardized 36x36px container for card display
 function getWalletBadgeHTML(iconKey, name) {
   const icon = (iconKey || detectWalletIcon(name) || 'cash').toLowerCase();
   const info = WALLET_LOGOS[icon];
   if (info) {
-    return `<div class="wallet-brand-badge" title="${info.name}">
-      <img src="${info.src}" alt="${info.name}" style="width: 100%; height: 100%; object-fit: contain;">
+    return `<div class="wallet-brand-badge" title="${info.name}" style="width: 36px; height: 36px; min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; overflow: hidden;">
+      <img src="${info.src}" alt="${info.name}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 6px; display: block;">
     </div>`;
   }
-  return `<div class="wallet-brand-badge badge-default" title="Dompet">💳</div>`;
+  return `<div class="wallet-brand-badge badge-default" title="Dompet" style="width: 36px; height: 36px; min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">💳</div>`;
 }
 
 // Preset selection inside Tambah Dompet modal
