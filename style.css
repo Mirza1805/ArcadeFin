@@ -922,6 +922,18 @@ select,
   margin-bottom: 6px;
 }
 
+/* Standard Select Appearance Normalization - Completely hide native OS/browser dropdown arrows */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+select::-ms-expand {
+  display: none;
+}
+
 .form-group input,
 .form-group select {
   width: 100%;
@@ -939,6 +951,14 @@ select,
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
+.form-group select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 38px;
+  cursor: pointer;
+}
+
 .form-group input:focus,
 .form-group select:focus {
   border-color: var(--border-focus);
@@ -950,6 +970,13 @@ select,
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.select-wrapper select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 38px;
 }
 
 .select-wrapper::after {
@@ -1054,7 +1081,10 @@ select,
 }
 
 .filter-select-wrapper select {
-  padding: 8px 30px 8px 12px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 8px 34px 8px 12px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-input);
@@ -1363,6 +1393,15 @@ select,
 /* ===================================================
    MENU 3: REVIEW (CALENDAR & LEADERBOARD)
    =================================================== */
+
+/* Calendar Card Container */
+.calendar-card,
+#page-review > .glass-card:first-of-type {
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
 
 /* Calendar Card Header */
 .calendar-card-header {
@@ -2148,6 +2187,42 @@ select,
 }
 .animate-in { animation: fade-up 0.4s ease-out both; }
 .animate-in-delay { animation: fade-up 0.4s ease-out 0.1s both; }
+
+/* ===================================================
+   DESKTOP RESPONSIVE ENHANCEMENTS
+   =================================================== */
+@media (min-width: 768px) {
+  .calendar-card,
+  #page-review > .glass-card:first-of-type {
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .calendar-weekdays,
+  .calendar-days-grid {
+    max-width: 100%;
+    gap: 8px;
+  }
+
+  .cal-day-cell {
+    aspect-ratio: auto;
+    height: 48px;
+    max-height: 52px;
+    padding: 6px 4px;
+    border-radius: 8px;
+  }
+
+  .cal-day-num {
+    font-size: 0.92rem;
+  }
+
+  .cal-day-dot {
+    width: 5px;
+    height: 5px;
+    margin-top: 3px;
+  }
+}
 
 /* ===================================================
    MOBILE-FIRST RESPONSIVE MEDIA QUERIES

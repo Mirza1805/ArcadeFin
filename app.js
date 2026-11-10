@@ -1754,14 +1754,18 @@ async function renderRekapPage() {
   const customStartDateStr = userCode ? localStorage.getItem('budget_cycle_' + userCode) : null;
   let cycleStartDate = null;
   if (customStartDateStr) {
-    cycleStartDate = new Date(customStartDateStr);
+    const parsed = new Date(customStartDateStr);
+    if (!isNaN(parsed.getTime())) {
+      cycleStartDate = parsed;
+    }
   }
 
-  const rekapFilter = document.getElementById('rekap-time-filter')?.value || 'month';
-  let filteredTrx = getFilteredData(rekapFilter, allTransactions);
-
-  if (cycleStartDate && (rekapFilter === 'month' || rekapFilter === 'today')) {
-    filteredTrx = filteredTrx.filter(trx => parseTrxTime(trx) >= cycleStartDate);
+  // Strict manual reset logic (never auto-reset by calendar month):
+  // If a manual reset date exists, accumulate strictly from that date onwards.
+  // If no reset date exists, accumulate from the very beginning of the records.
+  let filteredTrx = allTransactions;
+  if (cycleStartDate) {
+    filteredTrx = allTransactions.filter(trx => parseTrxTime(trx) >= cycleStartDate);
   }
 
   let totalExpenseFiltered = 0;
