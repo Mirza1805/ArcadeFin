@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arcadefin-v6';
+const CACHE_NAME = 'arcadefin-v7';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

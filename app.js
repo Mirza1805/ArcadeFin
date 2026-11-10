@@ -1836,7 +1836,6 @@ async function renderRekapPage() {
     expenseByCategory[catKey] = (expenseByCategory[catKey] || 0) + Number(trx.amount);
   });
 
-  const grid = document.getElementById('budget-cards-grid');
   if (!grid) return;
 
   if (allBudgets.length === 0) {
