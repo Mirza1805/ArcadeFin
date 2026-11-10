@@ -191,7 +191,7 @@ function showDashboard() {
 // Menu 3: 'page-review'
 let currentPage = 'page-transaksi';
 
-function switchPage(pageId) {
+async function switchPage(pageId) {
   // Alias backward compatibility
   if (pageId === 'page-dashboard') pageId = 'page-transaksi';
   if (pageId === 'page-rekap') pageId = 'page-budget';
@@ -219,7 +219,7 @@ function switchPage(pageId) {
 
   // Handle specific page activations
   if (pageId === 'page-transaksi') {
-    updateBalance(allTransactions);
+    await updateBalance(allTransactions);
   } else if (pageId === 'page-budget') {
     renderRekapPage();
   } else if (pageId === 'page-review') {
@@ -473,9 +473,9 @@ function toggleBalanceVisibility() {
   }
 }
 
-function toggleWalletsVisibility() {
+async function toggleWalletsVisibility() {
   isWalletsHidden = !isWalletsHidden;
-  updateBalance(allTransactions);
+  await updateBalance(allTransactions);
 }
 
 // ===================================================
@@ -722,7 +722,7 @@ async function saveWallet() {
     showToast('Berhasil', 'Dompet baru berhasil ditambahkan!', 'success');
     closeWalletModal();
     await fetchWallets();
-    updateBalance(allTransactions);
+    await updateBalance(allTransactions);
   }
 }
 
@@ -789,7 +789,7 @@ function getTrxId(trx) {
   return trx[ID_COLUMN];
 }
 
-async function fetchTransactions() {
+async function fetchTransactions(skipPageRender = false) {
   const userCode = localStorage.getItem('user_code');
   if (!userCode) return;
 
@@ -826,12 +826,14 @@ async function fetchTransactions() {
   }
 
   applyTimeFilter();
-  updateBalance(allTransactions);
+  await updateBalance(allTransactions);
 
-  if (currentPage === 'page-review') {
-    renderReviewPage();
-  } else if (currentPage === 'page-budget') {
-    renderRekapPage();
+  if (!skipPageRender) {
+    if (currentPage === 'page-review') {
+      renderReviewPage();
+    } else if (currentPage === 'page-budget') {
+      renderRekapPage();
+    }
   }
 }
 
@@ -978,15 +980,31 @@ function renderTable(data) {
   });
 }
 
-function updateBalance(transactions) {
+async function updateBalance(transactions) {
   let totalIncome = 0;
   let totalExpense = 0;
 
+  // Fetch cycleStartDate from Supabase (cloud-synced across all devices)
   const userCode = localStorage.getItem('user_code');
-  const customStartDateStr = userCode ? localStorage.getItem('budget_cycle_' + userCode) : null;
   let cycleStartDate = null;
-  if (customStartDateStr) {
-    cycleStartDate = new Date(customStartDateStr);
+
+  if (userCode) {
+    try {
+      const { data: userData, error: userErr } = await supabaseClient
+        .from('users')
+        .select('cycle_date')
+        .eq('user_code', userCode)
+        .single();
+
+      if (!userErr && userData && userData.cycle_date) {
+        const parsed = new Date(userData.cycle_date);
+        if (!isNaN(parsed.getTime())) {
+          cycleStartDate = parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch cycle_date for updateBalance:', e);
+    }
   }
 
   const walletBalances = {};
@@ -1521,11 +1539,9 @@ async function saveNewToken() {
     }
 
     localStorage.setItem('user_code', newToken);
-    const customCycle = localStorage.getItem('budget_cycle_' + oldToken);
-    if (customCycle) {
-      localStorage.setItem('budget_cycle_' + newToken, customCycle);
-      localStorage.removeItem('budget_cycle_' + oldToken);
-    }
+    // Clean up any legacy localStorage cycle entries
+    localStorage.removeItem('budget_cycle_' + oldToken);
+    localStorage.removeItem('budget_cycle_' + newToken);
 
     closeEditTokenModal();
     showToast('Berhasil', 'Token Anda berhasil diperbarui menjadi: ' + newToken, 'success');
@@ -1535,7 +1551,7 @@ async function saveNewToken() {
 
     if (currentPage === 'page-budget') renderRekapPage();
     if (currentPage === 'page-review') renderReviewPage();
-    if (currentPage === 'page-transaksi') updateBalance(allTransactions);
+    if (currentPage === 'page-transaksi') await updateBalance(allTransactions);
 
   } catch (err) {
     console.error('Error saat migrasi token:', err);
@@ -1747,16 +1763,43 @@ async function confirmDeleteBudget() {
 }
 
 async function renderRekapPage() {
+  // Show loading state immediately
+  const grid = document.getElementById('budget-cards-grid');
+  if (grid) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⏳</div>
+        <p>Memuat data budget...</p>
+      </div>
+    `;
+  }
+
+  // Force fresh fetch of ALL data from Supabase before calculating anything
+  // skipPageRender=true to prevent fetchTransactions -> renderRekapPage recursion
+  await fetchTransactions(true);
   await fetchBudgets();
   populateBudgetCategoryDatalist();
 
+  // Fetch cycleStartDate from Supabase (cloud-synced, NOT localStorage)
   const userCode = localStorage.getItem('user_code');
-  const customStartDateStr = userCode ? localStorage.getItem('budget_cycle_' + userCode) : null;
   let cycleStartDate = null;
-  if (customStartDateStr) {
-    const parsed = new Date(customStartDateStr);
-    if (!isNaN(parsed.getTime())) {
-      cycleStartDate = parsed;
+
+  if (userCode) {
+    try {
+      const { data: userData, error: userErr } = await supabaseClient
+        .from('users')
+        .select('cycle_date')
+        .eq('user_code', userCode)
+        .single();
+
+      if (!userErr && userData && userData.cycle_date) {
+        const parsed = new Date(userData.cycle_date);
+        if (!isNaN(parsed.getTime())) {
+          cycleStartDate = parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch cycle_date from Supabase:', e);
     }
   }
 
@@ -2342,12 +2385,26 @@ async function confirmResetData() {
   const userCode = localStorage.getItem('user_code');
   if (!userCode) return;
 
-  localStorage.setItem('budget_cycle_' + userCode, new Date().toISOString());
+  const todayStr = new Date().toISOString();
+
+  // Save cycle reset date to Supabase (cloud-synced across all devices)
+  const { error } = await supabaseClient
+    .from('users')
+    .update({ cycle_date: todayStr })
+    .eq('user_code', userCode);
+
+  if (error) {
+    showToast('Gagal', 'Gagal mereset siklus: ' + error.message, 'error');
+    return;
+  }
+
+  // Clean up any legacy localStorage entry
+  localStorage.removeItem('budget_cycle_' + userCode);
 
   closeResetDataModal();
   showToast('Berhasil', 'Siklus Budget berhasil direset! Total pengeluaran & pemasukan kembali ke Rp 0.', 'success');
 
-  updateBalance(allTransactions);
+  await updateBalance(allTransactions);
   if (currentPage === 'page-budget') {
     renderRekapPage();
   }
